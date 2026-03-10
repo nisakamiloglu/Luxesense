@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>LuxeSense App Icon Generator</title>
+  <style>
+    body {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      background: #333;
+      font-family: sans-serif;
+      gap: 30px;
+    }
+    canvas {
+      border-radius: 20px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    }
+    .buttons {
+      display: flex;
+      gap: 20px;
+    }
+    button {
+      padding: 15px 30px;
+      font-size: 16px;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      font-weight: 600;
+    }
+    .download-cream {
+      background: #C9A962;
+      color: white;
+    }
+    .download-transparent {
+      background: white;
+      color: #333;
+    }
+    p {
+      color: white;
+      opacity: 0.7;
+    }
+  </style>
+</head>
+<body>
+  <canvas id="iconCanvas" width="1024" height="1024"></canvas>
+
+  <div class="buttons">
+    <button class="download-cream" onclick="downloadIcon(false)">Download (Cream Background)</button>
+    <button class="download-transparent" onclick="downloadIcon(true)">Download (Transparent)</button>
+  </div>
+
+  <p>Click a button to download the icon as PNG</p>
+
+  <script>
+    const canvas = document.getElementById('iconCanvas');
+    const ctx = canvas.getContext('2d');
+
+    function drawIcon(transparent = false) {
+      ctx.clearRect(0, 0, 1024, 1024);
+
+      if (!transparent) {
+        // Cream background
+        ctx.fillStyle = '#FAF8F5';
+        ctx.fillRect(0, 0, 1024, 1024);
+      }
+
+      // LuxeSense text
+      ctx.fillStyle = '#1A1A1A';
+      ctx.font = '300 140px -apple-system, BlinkMacSystemFont, "Helvetica Neue", sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+
+      // Draw text with letter spacing
+      const text = 'LuxeSense';
+      const letterSpacing = 14;
+      let x = 512;
+      const y = 500;
+
+      // Calculate total width
+      let totalWidth = 0;
+      for (let i = 0; i < text.length; i++) {
+        totalWidth += ctx.measureText(text[i]).width + letterSpacing;
+      }
+      totalWidth -= letterSpacing;
+
+      // Draw each letter
+      let currentX = x - totalWidth / 2;
+      for (let i = 0; i < text.length; i++) {
+        ctx.fillText(text[i], currentX + ctx.measureText(text[i]).width / 2, y);
+        currentX += ctx.measureText(text[i]).width + letterSpacing;
+      }
+
+      // Gold line
+      const gradient = ctx.createLinearGradient(312, 600, 712, 600);
+      gradient.addColorStop(0, 'transparent');
+      gradient.addColorStop(0.2, '#C9A962');
+      gradient.addColorStop(0.8, '#C9A962');
+      gradient.addColorStop(1, 'transparent');
+
+      ctx.fillStyle = gradient;
+      ctx.fillRect(312, 595, 400, 4);
+    }
+
+    function downloadIcon(transparent) {
+      drawIcon(transparent);
+
+      const link = document.createElement('a');
+      link.download = transparent ? 'icon-transparent.png' : 'icon.png';
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+    }
+
+    // Initial draw
+    drawIcon(false);
+  </script>
+</body>
+</html>

@@ -1,0 +1,170 @@
+import React from 'react';
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { createStackNavigator } from '@react-navigation/stack';
+import { Ionicons } from '@expo/vector-icons';
+import { COLORS } from '../constants/theme';
+
+// Auth Screens
+import LoginScreen from '../screens/LoginScreen';
+import SplashScreen from '../screens/SplashScreen';
+import WelcomeScreen from '../screens/WelcomeScreen';
+
+// Customer Screens
+import HomeScreen from '../screens/HomeScreen';
+import CatalogScreen from '../screens/CatalogScreen';
+import ProductDetailsScreen from '../screens/ProductDetailsScreen';
+import CartScreen from '../screens/CartScreen';
+import CheckoutScreen from '../screens/CheckoutScreen';
+import OrderSuccessScreen from '../screens/OrderSuccessScreen';
+import FeedbackScreen from '../screens/FeedbackScreen';
+import WishlistScreen from '../screens/WishlistScreen';
+import ProfileScreen from '../screens/ProfileScreen';
+import AIStylistScreen from '../screens/AIStylistScreen';
+import ChatScreen from '../screens/ChatScreen';
+
+// Advisor Screens
+import AdvisorDashboardScreen from '../screens/AdvisorDashboardScreen';
+import CustomersScreen from '../screens/CustomersScreen';
+import CustomerDetailScreen from '../screens/CustomerDetailScreen';
+import AdvisorCalendarScreen from '../screens/AdvisorCalendarScreen';
+
+const Tab = createBottomTabNavigator();
+const Stack = createStackNavigator();
+
+// Customer Tab Navigator
+const CustomerTabs = () => {
+  return (
+    <Tab.Navigator
+      screenOptions={({ route }) => ({
+        headerShown: false,
+        tabBarIcon: ({ focused, color, size }) => {
+          let iconName;
+
+          switch (route.name) {
+            case 'Home':
+              iconName = focused ? 'home' : 'home-outline';
+              break;
+            case 'Catalog':
+              iconName = focused ? 'grid' : 'grid-outline';
+              break;
+            case 'Wishlist':
+              iconName = focused ? 'heart' : 'heart-outline';
+              break;
+            case 'Profile':
+              iconName = focused ? 'person' : 'person-outline';
+              break;
+            default:
+              iconName = 'ellipse';
+          }
+
+          return <Ionicons name={iconName} size={22} color={color} />;
+        },
+        tabBarActiveTintColor: COLORS.gold,
+        tabBarInactiveTintColor: COLORS.gray,
+        tabBarStyle: {
+          backgroundColor: COLORS.white,
+          borderTopColor: COLORS.beigeDark,
+          borderTopWidth: 1,
+          paddingTop: 8,
+          paddingBottom: 28,
+          height: 80,
+        },
+        tabBarLabelStyle: {
+          fontSize: 11,
+          fontWeight: '500',
+          marginTop: 4,
+        },
+      })}
+    >
+      <Tab.Screen name="Home" component={HomeScreen} />
+      <Tab.Screen name="Catalog" component={CatalogScreen} />
+      <Tab.Screen name="Wishlist" component={WishlistScreen} />
+      <Tab.Screen name="Profile" component={ProfileScreen} />
+    </Tab.Navigator>
+  );
+};
+
+// Advisor Tab Navigator
+const AdvisorTabs = () => {
+  return (
+    <Tab.Navigator
+      screenOptions={({ route }) => ({
+        headerShown: false,
+        tabBarIcon: ({ focused, color, size }) => {
+          let iconName;
+
+          switch (route.name) {
+            case 'Dashboard':
+              iconName = focused ? 'grid' : 'grid-outline';
+              break;
+            case 'Customers':
+              iconName = focused ? 'people' : 'people-outline';
+              break;
+            case 'Calendar':
+              iconName = focused ? 'calendar' : 'calendar-outline';
+              break;
+            case 'Products':
+              iconName = focused ? 'bag' : 'bag-outline';
+              break;
+            default:
+              iconName = 'ellipse';
+          }
+
+          return <Ionicons name={iconName} size={22} color={color} />;
+        },
+        tabBarActiveTintColor: COLORS.gold,
+        tabBarInactiveTintColor: COLORS.gray,
+        tabBarStyle: {
+          backgroundColor: COLORS.white,
+          borderTopColor: COLORS.beigeDark,
+          borderTopWidth: 1,
+          paddingTop: 8,
+          paddingBottom: 28,
+          height: 80,
+        },
+        tabBarLabelStyle: {
+          fontSize: 11,
+          fontWeight: '500',
+          marginTop: 4,
+        },
+      })}
+    >
+      <Tab.Screen name="Dashboard" component={AdvisorDashboardScreen} />
+      <Tab.Screen name="Customers" component={CustomersScreen} />
+      <Tab.Screen name="Calendar" component={AdvisorCalendarScreen} />
+      <Tab.Screen name="Products" component={CatalogScreen} />
+    </Tab.Navigator>
+  );
+};
+
+const AppNavigator = () => {
+  return (
+    <Stack.Navigator
+      screenOptions={{
+        headerShown: false,
+      }}
+      initialRouteName="Login"
+    >
+      {/* Auth Flow */}
+      <Stack.Screen name="Login" component={LoginScreen} />
+
+      {/* Customer Flow */}
+      <Stack.Screen name="Splash" component={SplashScreen} />
+      <Stack.Screen name="Welcome" component={WelcomeScreen} />
+      <Stack.Screen name="MainTabs" component={CustomerTabs} />
+      <Stack.Screen name="ProductDetails" component={ProductDetailsScreen} />
+      <Stack.Screen name="Cart" component={CartScreen} />
+      <Stack.Screen name="Checkout" component={CheckoutScreen} />
+      <Stack.Screen name="OrderSuccess" component={OrderSuccessScreen} />
+      <Stack.Screen name="Feedback" component={FeedbackScreen} />
+      <Stack.Screen name="AIStylist" component={AIStylistScreen} />
+      <Stack.Screen name="Chat" component={ChatScreen} />
+
+      {/* Advisor Flow */}
+      <Stack.Screen name="AdvisorTabs" component={AdvisorTabs} />
+      <Stack.Screen name="CustomerDetail" component={CustomerDetailScreen} />
+    </Stack.Navigator>
+  );
+};
+
+export default AppNavigator;
