@@ -108,130 +108,6 @@ const CatalogScreen = ({ navigation, route }) => {
     </TouchableOpacity>
   );
 
-  const FilterModal = () => (
-    <Modal
-      visible={showFilterModal}
-      animationType="slide"
-      transparent={true}
-      onRequestClose={() => setShowFilterModal(false)}
-    >
-      <View style={styles.modalOverlay}>
-        <View style={styles.modalContent}>
-          {/* Modal Header */}
-          <View style={styles.modalHeader}>
-            <Text style={styles.modalTitle}>{t('common.filter')}</Text>
-            <TouchableOpacity onPress={() => setShowFilterModal(false)}>
-              <Ionicons name="close" size={24} color={COLORS.black} />
-            </TouchableOpacity>
-          </View>
-
-          <ScrollView showsVerticalScrollIndicator={false}>
-            {/* Sort By */}
-            <View style={styles.filterSection}>
-              <Text style={styles.filterSectionTitle}>{t('catalog.sortBy')}</Text>
-              <View style={styles.sortOptions}>
-                {[
-                  { id: 'featured', label: t('catalog.popular') },
-                  { id: 'price_low', label: t('catalog.priceLowHigh') },
-                  { id: 'price_high', label: t('catalog.priceHighLow') },
-                  { id: 'name', label: t('catalog.newest') },
-                ].map((option) => (
-                  <TouchableOpacity
-                    key={option.id}
-                    style={[
-                      styles.sortOption,
-                      sortBy === option.id && styles.sortOptionActive,
-                    ]}
-                    onPress={() => setSortBy(option.id)}
-                  >
-                    <Text
-                      style={[
-                        styles.sortOptionText,
-                        sortBy === option.id && styles.sortOptionTextActive,
-                      ]}
-                    >
-                      {option.label}
-                    </Text>
-                    {sortBy === option.id && (
-                      <Ionicons name="checkmark" size={18} color={COLORS.white} />
-                    )}
-                  </TouchableOpacity>
-                ))}
-              </View>
-            </View>
-
-            {/* Brand Filter */}
-            <View style={styles.filterSection}>
-              <Text style={styles.filterSectionTitle}>{t('catalog.brand')}</Text>
-              <View style={styles.brandGrid}>
-                {brands.map((brand) => (
-                  <TouchableOpacity
-                    key={brand.id}
-                    style={[
-                      styles.brandChip,
-                      activeBrand === brand.id && styles.brandChipActive,
-                    ]}
-                    onPress={() => setActiveBrand(brand.id)}
-                  >
-                    <Text
-                      style={[
-                        styles.brandChipText,
-                        activeBrand === brand.id && styles.brandChipTextActive,
-                      ]}
-                    >
-                      {brand.name}
-                    </Text>
-                  </TouchableOpacity>
-                ))}
-              </View>
-            </View>
-
-            {/* Price Range */}
-            <View style={styles.filterSection}>
-              <Text style={styles.filterSectionTitle}>{t('catalog.priceRange')}</Text>
-              <View style={styles.priceOptions}>
-                {priceRanges.map((range) => (
-                  <TouchableOpacity
-                    key={range.id}
-                    style={[
-                      styles.priceOption,
-                      activePriceRange === range.id && styles.priceOptionActive,
-                    ]}
-                    onPress={() => setActivePriceRange(range.id)}
-                  >
-                    <Text
-                      style={[
-                        styles.priceOptionText,
-                        activePriceRange === range.id && styles.priceOptionTextActive,
-                      ]}
-                    >
-                      {range.name}
-                    </Text>
-                  </TouchableOpacity>
-                ))}
-              </View>
-            </View>
-          </ScrollView>
-
-          {/* Modal Footer */}
-          <View style={styles.modalFooter}>
-            <TouchableOpacity style={styles.clearBtn} onPress={clearAllFilters}>
-              <Text style={styles.clearBtnText}>{t('catalog.clearAll')}</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.applyBtn}
-              onPress={() => setShowFilterModal(false)}
-            >
-              <Text style={styles.applyBtnText}>
-                {t('catalog.showResults')} ({filteredProducts.length})
-              </Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </View>
-    </Modal>
-  );
-
   return (
     <View style={styles.container}>
       {/* Header */}
@@ -379,7 +255,128 @@ const CatalogScreen = ({ navigation, route }) => {
         }
       />
 
-      <FilterModal />
+      {/* Filter Modal */}
+      <Modal
+        visible={showFilterModal}
+        animationType="slide"
+        transparent={true}
+        onRequestClose={() => setShowFilterModal(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            {/* Modal Header */}
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>{t('common.filter')}</Text>
+              <TouchableOpacity onPress={() => setShowFilterModal(false)}>
+                <Ionicons name="close" size={24} color={COLORS.black} />
+              </TouchableOpacity>
+            </View>
+
+            <ScrollView showsVerticalScrollIndicator={false}>
+              {/* Sort By */}
+              <View style={styles.filterSection}>
+                <Text style={styles.filterSectionTitle}>{t('catalog.sortBy')}</Text>
+                <View style={styles.sortOptions}>
+                  {[
+                    { id: 'featured', label: t('catalog.popular') },
+                    { id: 'price_low', label: t('catalog.priceLowHigh') },
+                    { id: 'price_high', label: t('catalog.priceHighLow') },
+                    { id: 'name', label: t('catalog.newest') },
+                  ].map((option) => (
+                    <TouchableOpacity
+                      key={option.id}
+                      style={[
+                        styles.sortOption,
+                        sortBy === option.id && styles.sortOptionActive,
+                      ]}
+                      onPress={() => setSortBy(option.id)}
+                    >
+                      <Text
+                        style={[
+                          styles.sortOptionText,
+                          sortBy === option.id && styles.sortOptionTextActive,
+                        ]}
+                      >
+                        {option.label}
+                      </Text>
+                      {sortBy === option.id && (
+                        <Ionicons name="checkmark" size={18} color={COLORS.white} />
+                      )}
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              </View>
+
+              {/* Brand Filter */}
+              <View style={styles.filterSection}>
+                <Text style={styles.filterSectionTitle}>{t('catalog.brand')}</Text>
+                <View style={styles.brandGrid}>
+                  {brands.map((brand) => (
+                    <TouchableOpacity
+                      key={brand.id}
+                      style={[
+                        styles.brandChip,
+                        activeBrand === brand.id && styles.brandChipActive,
+                      ]}
+                      onPress={() => setActiveBrand(brand.id)}
+                    >
+                      <Text
+                        style={[
+                          styles.brandChipText,
+                          activeBrand === brand.id && styles.brandChipTextActive,
+                        ]}
+                      >
+                        {brand.name}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              </View>
+
+              {/* Price Range */}
+              <View style={styles.filterSection}>
+                <Text style={styles.filterSectionTitle}>{t('catalog.priceRange')}</Text>
+                <View style={styles.priceOptions}>
+                  {priceRanges.map((range) => (
+                    <TouchableOpacity
+                      key={range.id}
+                      style={[
+                        styles.priceOption,
+                        activePriceRange === range.id && styles.priceOptionActive,
+                      ]}
+                      onPress={() => setActivePriceRange(range.id)}
+                    >
+                      <Text
+                        style={[
+                          styles.priceOptionText,
+                          activePriceRange === range.id && styles.priceOptionTextActive,
+                        ]}
+                      >
+                        {range.name}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              </View>
+            </ScrollView>
+
+            {/* Modal Footer */}
+            <View style={styles.modalFooter}>
+              <TouchableOpacity style={styles.clearBtn} onPress={clearAllFilters}>
+                <Text style={styles.clearBtnText}>{t('catalog.clearAll')}</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.applyBtn}
+                onPress={() => setShowFilterModal(false)}
+              >
+                <Text style={styles.applyBtnText}>
+                  {t('catalog.showResults')} ({filteredProducts.length})
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 };
