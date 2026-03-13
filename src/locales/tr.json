@@ -54,7 +54,11 @@
     "newest": "En Yeni",
     "popular": "Popüler",
     "items": "ürün",
-    "noProducts": "Ürün bulunamadı"
+    "noProducts": "Ürün bulunamadı",
+    "brand": "Marka",
+    "priceRange": "Fiyat Aralığı",
+    "clearAll": "Temizle",
+    "showResults": "Sonuçları Göster"
   },
   "product": {
     "addToCart": "Sepete Ekle",
@@ -72,7 +76,13 @@
     "onSale": "İNDİRİM",
     "storeAvailability": "Mağaza Durumu",
     "color": "Renk",
-    "size": "Beden"
+    "size": "Beden",
+    "addedToCart": "Sepete Eklendi!",
+    "addedToCartMessage": "ürünü sepetinize eklendi",
+    "continueShop": "Alışverişe Devam",
+    "goToCart": "Sepete Git",
+    "sizeGuide": "Beden Rehberi",
+    "availableIn": "mağazada mevcut"
   },
   "cart": {
     "myCart": "Sepetim",
@@ -100,13 +110,28 @@
     "email": "E-posta",
     "phone": "Telefon",
     "address": "Adres",
+    "apartment": "Daire, Kat vb. (opsiyonel)",
     "city": "Şehir",
+    "state": "İlçe",
     "country": "Ülke",
     "zipCode": "Posta Kodu",
     "shippingMethod": "Kargo Yöntemi",
     "expressShipping": "Hızlı Kargo",
     "standardShipping": "Standart Kargo",
-    "businessDays": "iş günü"
+    "overnightShipping": "Ertesi Gün Teslimat",
+    "businessDays": "iş günü",
+    "paymentDetails": "Ödeme Bilgileri",
+    "cardNumber": "Kart Numarası",
+    "cardName": "Kart Üzerindeki İsim",
+    "expiry": "Son Kullanma",
+    "cvv": "CVV",
+    "securePayment": "Güvenli Ödeme",
+    "encryptedSecure": "Ödeme bilgileriniz şifreli ve güvenli",
+    "orderReview": "Sipariş İnceleme",
+    "orderItems": "Sipariş Ürünleri",
+    "free": "ÜCRETSİZ",
+    "paymentRequired": "Ödeme bilgileri gerekli",
+    "fillPaymentDetails": "Lütfen tüm ödeme bilgilerini doldurun"
   },
   "wishlist": {
     "title": "Favorilerim",
@@ -133,7 +158,8 @@
     "loyaltyPoints": "Sadakat Puanı",
     "tier": "Seviye",
     "member": "Üye",
-    "callAdvisor": "Danışmanı Ara"
+    "callAdvisor": "Danışmanı Ara",
+    "recentOrders": "Son Siparişler"
   },
   "aiStylist": {
     "title": "AI Stilist",
@@ -163,6 +189,7 @@
     "welcome": "Hoş Geldiniz",
     "login": "Giriş Yap",
     "logout": "Çıkış Yap",
+    "register": "Kayıt Ol",
     "email": "E-posta",
     "password": "Şifre",
     "forgotPassword": "Şifremi Unuttum",
@@ -171,7 +198,16 @@
     "selectAccountType": "Hesap türünüzü seçin",
     "shopLuxury": "Dünyanın en seçkin lüks ürünleri",
     "signInToContinue": "Devam etmek için giriş yapın",
-    "demoCredentials": "Demo Bilgileri"
+    "demoCredentials": "Demo Bilgileri",
+    "browseAsGuest": "Misafir Olarak Göz At",
+    "orContinueWith": "veya şununla devam et",
+    "alreadyHaveAccount": "Zaten hesabınız var mı?",
+    "dontHaveAccount": "Hesabınız yok mu?",
+    "signUp": "Kayıt Ol",
+    "name": "Ad Soyad",
+    "phone": "Telefon",
+    "createAccount": "Hesap Oluştur",
+    "experienceLuxury": "Kişiselleştirilmiş lüks deneyimi"
   },
   "order": {
     "orderSuccess": "Sipariş Başarılı!",
@@ -181,14 +217,38 @@
     "estimatedDelivery": "Tahmini Teslimat",
     "continueShopping": "Alışverişe Devam Et",
     "viewOrder": "Siparişi Görüntüle",
-    "orderConfirmed": "Siparişiniz onaylandı ve yakında kargoya verilecektir."
+    "orderConfirmed": "Siparişiniz onaylandı ve yakında kargoya verilecektir.",
+    "processing": "İşleniyor",
+    "shipped": "Kargoya Verildi",
+    "delivered": "Teslim Edildi"
   },
   "feedback": {
-    "title": "Deneyiminiz nasıldı?",
+    "title": "Deneyiminizi Değerlendirin",
     "subtitle": "Geri bildiriminiz bize yardımcı olur",
     "placeholder": "Deneyiminiz hakkında daha fazla bilgi verin...",
     "submit": "Gönder",
-    "skip": "Atla"
+    "skip": "Atla",
+    "overallExperience": "Genel deneyiminiz nasıldı?",
+    "rateAspects": "Belirli yönleri değerlendirin",
+    "productQuality": "Ürün Kalitesi",
+    "customerService": "Müşteri Hizmetleri",
+    "deliveryExperience": "Teslimat Deneyimi",
+    "whatDidYouLove": "Neyi beğendiniz?",
+    "writeReview": "Yorum yazın (opsiyonel)",
+    "thankYou": "Teşekkürler!",
+    "feedbackSubmitted": "Geri bildiriminiz başarıyla gönderildi.",
+    "tapToRate": "Değerlendirmek için dokunun",
+    "poor": "Kötü",
+    "fair": "Orta",
+    "good": "İyi",
+    "veryGood": "Çok İyi",
+    "excellent": "Mükemmel",
+    "fastDelivery": "Hızlı Teslimat",
+    "greatQuality": "Harika Kalite",
+    "excellentService": "Mükemmel Hizmet",
+    "beautifulPackaging": "Güzel Paketleme",
+    "asDescribed": "Açıklamaya Uygun",
+    "willBuyAgain": "Tekrar Alırım"
   },
   "advisor": {
     "dashboard": "Panel",
@@ -199,5 +259,28 @@
     "clientsServed": "Hizmet Verilen",
     "avgTicket": "Ort. Sepet",
     "conversion": "Dönüşüm"
+  },
+  "landing": {
+    "tagline": "Lüks Alışverişin Yeni Yolu",
+    "getStarted": "Başla",
+    "browseAsGuest": "Misafir Olarak Göz At"
+  },
+  "settings": {
+    "title": "Ayarlar",
+    "account": "Hesap",
+    "editProfile": "Profili Düzenle",
+    "changePassword": "Şifre Değiştir",
+    "preferences": "Tercihler",
+    "language": "Dil",
+    "notifications": "Bildirimler",
+    "darkMode": "Karanlık Mod",
+    "support": "Destek",
+    "helpCenter": "Yardım Merkezi",
+    "contactUs": "Bize Ulaşın",
+    "privacyPolicy": "Gizlilik Politikası",
+    "termsOfService": "Kullanım Şartları",
+    "danger": "Tehlikeli Bölge",
+    "deleteAccount": "Hesabı Sil",
+    "logout": "Çıkış Yap"
   }
 }

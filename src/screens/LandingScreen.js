@@ -8,11 +8,15 @@ import {
   Dimensions,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useTranslation } from 'react-i18next';
 import { COLORS, SIZES, SHADOWS } from '../constants/theme';
+import { useApp } from '../context/AppContext';
 
 const { width } = Dimensions.get('window');
 
 const LandingScreen = ({ navigation }) => {
+  const { t } = useTranslation();
+  const { login } = useApp();
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const slideAnim = useRef(new Animated.Value(50)).current;
   const buttonAnim = useRef(new Animated.Value(0)).current;
@@ -39,6 +43,15 @@ const LandingScreen = ({ navigation }) => {
     ]).start();
   }, []);
 
+  const handleGuestLogin = () => {
+    login('customer', {
+      id: 'guest',
+      name: 'Misafir',
+      email: 'guest@luxesense.com',
+    }, null);
+    navigation.replace('MainTabs');
+  };
+
   return (
     <View style={styles.container}>
       {/* Brand Section */}
@@ -57,7 +70,7 @@ const LandingScreen = ({ navigation }) => {
         <Text style={styles.brandName}>LUXESENSE</Text>
         <Text style={styles.brandAI}>AI</Text>
         <View style={styles.brandDivider} />
-        <Text style={styles.brandTagline}>A New Way of Shopping</Text>
+        <Text style={styles.brandTagline}>{t('landing.tagline')}</Text>
       </Animated.View>
 
       {/* Buttons Section */}
@@ -74,7 +87,7 @@ const LandingScreen = ({ navigation }) => {
           onPress={() => navigation.navigate('Login')}
           activeOpacity={0.8}
         >
-          <Text style={styles.loginBtnText}>Sign In</Text>
+          <Text style={styles.loginBtnText}>{t('auth.login')}</Text>
           <Ionicons name="arrow-forward" size={20} color={COLORS.white} />
         </TouchableOpacity>
 
@@ -83,24 +96,28 @@ const LandingScreen = ({ navigation }) => {
           onPress={() => navigation.navigate('Register')}
           activeOpacity={0.8}
         >
-          <Text style={styles.signupBtnText}>Create Account</Text>
+          <Text style={styles.signupBtnText}>{t('auth.createAccount')}</Text>
         </TouchableOpacity>
 
         <View style={styles.dividerRow}>
           <View style={styles.dividerLine} />
-          <Text style={styles.dividerText}>or</Text>
+          <Text style={styles.dividerText}>{t('auth.orContinueWith')}</Text>
           <View style={styles.dividerLine} />
         </View>
 
-        <TouchableOpacity style={styles.guestBtn} activeOpacity={0.8}>
+        <TouchableOpacity
+          style={styles.guestBtn}
+          activeOpacity={0.8}
+          onPress={handleGuestLogin}
+        >
           <Ionicons name="eye-outline" size={20} color={COLORS.gray} />
-          <Text style={styles.guestBtnText}>Browse as Guest</Text>
+          <Text style={styles.guestBtnText}>{t('landing.browseAsGuest')}</Text>
         </TouchableOpacity>
       </Animated.View>
 
       {/* Footer */}
       <Text style={styles.footerText}>
-        Experience personalized luxury
+        {t('auth.experienceLuxury')}
       </Text>
     </View>
   );

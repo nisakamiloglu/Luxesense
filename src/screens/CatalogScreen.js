@@ -162,7 +162,7 @@ const CatalogScreen = ({ navigation, route }) => {
 
             {/* Brand Filter */}
             <View style={styles.filterSection}>
-              <Text style={styles.filterSectionTitle}>Brand</Text>
+              <Text style={styles.filterSectionTitle}>{t('catalog.brand')}</Text>
               <View style={styles.brandGrid}>
                 {brands.map((brand) => (
                   <TouchableOpacity
@@ -188,7 +188,7 @@ const CatalogScreen = ({ navigation, route }) => {
 
             {/* Price Range */}
             <View style={styles.filterSection}>
-              <Text style={styles.filterSectionTitle}>Price Range</Text>
+              <Text style={styles.filterSectionTitle}>{t('catalog.priceRange')}</Text>
               <View style={styles.priceOptions}>
                 {priceRanges.map((range) => (
                   <TouchableOpacity
@@ -216,14 +216,14 @@ const CatalogScreen = ({ navigation, route }) => {
           {/* Modal Footer */}
           <View style={styles.modalFooter}>
             <TouchableOpacity style={styles.clearBtn} onPress={clearAllFilters}>
-              <Text style={styles.clearBtnText}>Clear All</Text>
+              <Text style={styles.clearBtnText}>{t('catalog.clearAll')}</Text>
             </TouchableOpacity>
             <TouchableOpacity
               style={styles.applyBtn}
               onPress={() => setShowFilterModal(false)}
             >
               <Text style={styles.applyBtnText}>
-                Show {filteredProducts.length} Results
+                {t('catalog.showResults')} ({filteredProducts.length})
               </Text>
             </TouchableOpacity>
           </View>
@@ -660,7 +660,7 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.white,
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
-    maxHeight: '85%',
+    height: '85%',
   },
   modalHeader: {
     flexDirection: 'row',

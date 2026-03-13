@@ -54,7 +54,11 @@
     "newest": "Newest",
     "popular": "Popular",
     "items": "items",
-    "noProducts": "No products found"
+    "noProducts": "No products found",
+    "brand": "Brand",
+    "priceRange": "Price Range",
+    "clearAll": "Clear All",
+    "showResults": "Show Results"
   },
   "product": {
     "addToCart": "Add to Cart",
@@ -163,6 +167,7 @@
     "welcome": "Welcome",
     "login": "Login",
     "logout": "Logout",
+    "register": "Register",
     "email": "Email",
     "password": "Password",
     "forgotPassword": "Forgot Password?",
@@ -171,7 +176,21 @@
     "selectAccountType": "Please select your account type",
     "shopLuxury": "Shop the world's finest luxury",
     "signInToContinue": "Sign in to continue",
-    "demoCredentials": "Demo Credentials"
+    "demoCredentials": "Demo Credentials",
+    "browseAsGuest": "Browse as Guest",
+    "orContinueWith": "or",
+    "alreadyHaveAccount": "Already have an account?",
+    "dontHaveAccount": "Don't have an account?",
+    "signUp": "Sign Up",
+    "name": "Full Name",
+    "phone": "Phone",
+    "createAccount": "Create Account",
+    "experienceLuxury": "Experience personalized luxury"
+  },
+  "landing": {
+    "tagline": "A New Way of Shopping",
+    "getStarted": "Get Started",
+    "browseAsGuest": "Browse as Guest"
   },
   "order": {
     "orderSuccess": "Order Successful!",
