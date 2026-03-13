@@ -1,8 +1,10 @@
 import React from 'react';
+import { View, ActivityIndicator } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createStackNavigator } from '@react-navigation/stack';
 import { Ionicons } from '@expo/vector-icons';
 import { COLORS } from '../constants/theme';
+import { useApp } from '../context/AppContext';
 
 // Auth Screens
 import LandingScreen from '../screens/LandingScreen';
@@ -141,12 +143,31 @@ const AdvisorTabs = () => {
 };
 
 const AppNavigator = () => {
+  const { isLoggedIn, isLoading, userType } = useApp();
+
+  // Show loading screen while checking auth state
+  if (isLoading) {
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: COLORS.cream }}>
+        <ActivityIndicator size="large" color={COLORS.gold} />
+      </View>
+    );
+  }
+
+  // Determine initial route based on auth state
+  const getInitialRoute = () => {
+    if (isLoggedIn) {
+      return userType === 'advisor' ? 'AdvisorTabs' : 'MainTabs';
+    }
+    return 'Landing';
+  };
+
   return (
     <Stack.Navigator
       screenOptions={{
         headerShown: false,
       }}
-      initialRouteName="Landing"
+      initialRouteName={getInitialRoute()}
     >
       {/* Auth Flow */}
       <Stack.Screen name="Landing" component={LandingScreen} />

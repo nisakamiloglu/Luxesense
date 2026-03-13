@@ -1,4 +1,5 @@
-import React, { createContext, useContext, useState } from 'react';
+import React, { createContext, useContext, useState, useEffect } from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import i18n from '../locales/i18n';
 
 const AppContext = createContext();
@@ -8,6 +9,7 @@ export const AppProvider = ({ children }) => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userType, setUserType] = useState(null); // 'customer' or 'advisor'
   const [token, setToken] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   // Customer user state
   const [user, setUser] = useState({
@@ -138,33 +140,77 @@ export const AppProvider = ({ children }) => {
     setLanguage(lang);
   };
 
+  // Load saved auth state on app start
+  useEffect(() => {
+    loadAuthState();
+  }, []);
+
+  const loadAuthState = async () => {
+    try {
+      const savedAuth = await AsyncStorage.getItem('authState');
+      if (savedAuth) {
+        const { savedToken, savedUserType, savedUser } = JSON.parse(savedAuth);
+        setToken(savedToken);
+        setUserType(savedUserType);
+        setUser(prev => ({ ...prev, ...savedUser }));
+        setIsLoggedIn(true);
+      }
+    } catch (error) {
+      console.log('Error loading auth state:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const saveAuthState = async (authToken, type, userData) => {
+    try {
+      await AsyncStorage.setItem('authState', JSON.stringify({
+        savedToken: authToken,
+        savedUserType: type,
+        savedUser: userData,
+      }));
+    } catch (error) {
+      console.log('Error saving auth state:', error);
+    }
+  };
+
+  const clearAuthState = async () => {
+    try {
+      await AsyncStorage.removeItem('authState');
+    } catch (error) {
+      console.log('Error clearing auth state:', error);
+    }
+  };
+
   // Auth functions
   const login = (type, userData = null, authToken = null) => {
     setIsLoggedIn(true);
     setUserType(type);
     if (authToken) setToken(authToken);
+
+    const userInfo = {
+      id: userData?.id,
+      name: userData?.name?.split(' ')[0] || userData?.name || '',
+      fullName: userData?.name || '',
+      email: userData?.email || '',
+      phone: userData?.phone || '',
+    };
+
     if (userData) {
       if (type === 'customer') {
-        setUser(prev => ({
-          ...prev,
-          id: userData.id,
-          name: userData.name?.split(' ')[0] || userData.name,
-          fullName: userData.name,
-          email: userData.email,
-          phone: userData.phone || '',
-        }));
+        setUser(prev => ({ ...prev, ...userInfo }));
       } else {
         setAdvisor(prev => ({
           ...prev,
-          id: userData.id,
-          name: userData.name?.split(' ')[0] || userData.name,
-          fullName: userData.name,
-          email: userData.email,
+          ...userInfo,
           employeeId: userData.employeeId || '',
           store: userData.storeLocation || '',
         }));
       }
     }
+
+    // Save auth state to AsyncStorage
+    saveAuthState(authToken, type, userInfo);
   };
 
   const logout = () => {
@@ -183,6 +229,8 @@ export const AppProvider = ({ children }) => {
       loyaltyPoints: 0,
       avatar: null,
     });
+    // Clear saved auth state
+    clearAuthState();
     // Clear chat messages on logout
     setAiStylistMessages([]);
     setSaChatMessages([]);
@@ -295,6 +343,7 @@ export const AppProvider = ({ children }) => {
     <AppContext.Provider value={{
       // Auth
       isLoggedIn,
+      isLoading,
       userType,
       token,
       login,

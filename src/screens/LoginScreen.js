@@ -57,16 +57,13 @@ const LoginScreen = ({ navigation }) => {
 
       if (response.success) {
         const loggedInUserType = response.user.role || userType;
-        showSuccess('Welcome Back!', `Good to see you again!`);
         login(loggedInUserType, response.user, response.token);
 
-        setTimeout(() => {
-          if (loggedInUserType === 'customer') {
-            navigation.replace('Splash');
-          } else {
-            navigation.replace('AdvisorTabs');
-          }
-        }, 1000);
+        if (loggedInUserType === 'customer') {
+          navigation.replace('Splash');
+        } else {
+          navigation.replace('AdvisorTabs');
+        }
       } else {
         showError('Login Failed', response.message || 'Invalid email or password');
       }
