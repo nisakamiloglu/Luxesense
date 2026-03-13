@@ -335,6 +335,15 @@ export const AppProvider = ({ children }) => {
       date: new Date().toISOString(),
     };
     setOrders([newOrder, ...orders]);
+
+    // Update user's totalSpent and loyaltyPoints
+    const earnedPoints = Math.floor(total / 10); // 1 point per $10
+    setUser(prev => ({
+      ...prev,
+      totalSpent: prev.totalSpent + total,
+      loyaltyPoints: prev.loyaltyPoints + earnedPoints,
+    }));
+
     clearCart();
     return newOrder;
   };
