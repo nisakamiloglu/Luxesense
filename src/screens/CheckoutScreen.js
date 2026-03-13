@@ -42,10 +42,10 @@ const CheckoutScreen = ({ navigation }) => {
   });
 
   const [paymentInfo, setPaymentInfo] = useState({
-    cardNumber: '',
+    cardNumber: '4242 4242 4242 4242',
     cardName: '',
-    expiry: '',
-    cvv: '',
+    expiry: '12/28',
+    cvv: '123',
   });
 
   // Update shipping info when user data is available
