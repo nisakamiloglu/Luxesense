@@ -17,6 +17,7 @@ import { useTranslation } from 'react-i18next';
 import { COLORS, SIZES, SHADOWS } from '../constants/theme';
 import { useApp } from '../context/AppContext';
 import { getSAResponse } from '../services/groqService';
+import { products } from '../constants/mockData';
 
 const ChatScreen = ({ route, navigation }) => {
   const { advisor } = route.params;
@@ -118,21 +119,93 @@ const ChatScreen = ({ route, navigation }) => {
       return `I can check availability for you right away! Which piece are you looking for?\n\nI have access to inventory across all our boutiques worldwide - Paris, London, Dubai, Milan, and New York. If it exists, I'll find it for you! 😊`;
     }
 
-    // Specific brands
+    // Specific brands - with products
     if (lowerMessage.match(/(hermès|hermes|birkin|kelly)/i)) {
-      return `Ah, Hermès - excellent taste! 🧡 As you may know, Birkins and Kellys are highly sought after.\n\nI currently have a few pieces available for my VIP clients:\n• Birkin 25 in Orange Togo\n• Kelly 28 in Noir Epsom\n\nWould you like me to reserve one for you? Given your Platinum status, I can prioritize your request.`;
+      const hermesProducts = products.filter(p => p.brand === 'HERMÈS').slice(0, 3);
+      return {
+        text: `Ah, Hermès - excellent taste! 🧡 Here are some pieces I recommend for you:`,
+        products: hermesProducts,
+      };
     }
 
     if (lowerMessage.match(/(chanel|classic flap)/i)) {
-      return `CHANEL is always a wonderful choice! The Classic Flap is truly timeless.\n\nWe currently have:\n• Medium Classic Flap in Black Caviar\n• Mini Flap in Light Pink Lambskin\n• Boy Bag in Dark Green\n\nPrices have been increasing, so now is a great time to invest. Shall I set aside any of these for you?`;
+      const chanelProducts = products.filter(p => p.brand === 'CHANEL').slice(0, 3);
+      return {
+        text: `CHANEL is always a wonderful choice! Here are our current favorites:`,
+        products: chanelProducts,
+      };
     }
 
     if (lowerMessage.match(/(cartier|love bracelet|juste un clou)/i)) {
-      return `Cartier jewelry is such a beautiful choice! 💎\n\nThe Love Bracelet and Juste un Clou are our most popular pieces. I can arrange a private fitting at the boutique where we can size you properly.\n\nAre you looking for yellow gold, rose gold, or white gold?`;
+      const cartierProducts = products.filter(p => p.brand === 'CARTIER').slice(0, 3);
+      return {
+        text: `Cartier jewelry is such a beautiful choice! 💎 Here are our most popular pieces:`,
+        products: cartierProducts,
+      };
     }
 
     if (lowerMessage.match(/(rolex|watch|saat)/i)) {
-      return `Luxury timepieces - excellent! ⌚\n\nI should mention that most Rolex models have significant waitlists. However, as a Platinum client, I can help expedite your request.\n\nWhich model interests you? Submariner, Datejust, or perhaps a Day-Date?`;
+      const rolexProducts = products.filter(p => p.brand === 'ROLEX').slice(0, 3);
+      return {
+        text: `Luxury timepieces - excellent! ⌚ Here are some stunning options:`,
+        products: rolexProducts,
+      };
+    }
+
+    if (lowerMessage.match(/(dior|lady dior)/i)) {
+      const diorProducts = products.filter(p => p.brand === 'DIOR').slice(0, 3);
+      return {
+        text: `Dior is absolutely stunning! Here are some pieces you'll love:`,
+        products: diorProducts,
+      };
+    }
+
+    if (lowerMessage.match(/(louis vuitton|lv|vuitton)/i)) {
+      const lvProducts = products.filter(p => p.brand === 'LOUIS VUITTON').slice(0, 3);
+      return {
+        text: `Louis Vuitton - a timeless choice! Here are some recommendations:`,
+        products: lvProducts,
+      };
+    }
+
+    if (lowerMessage.match(/(gucci)/i)) {
+      const gucciProducts = products.filter(p => p.brand === 'GUCCI').slice(0, 3);
+      return {
+        text: `Gucci has some amazing pieces! Take a look:`,
+        products: gucciProducts,
+      };
+    }
+
+    if (lowerMessage.match(/(prada)/i)) {
+      const pradaProducts = products.filter(p => p.brand === 'PRADA').slice(0, 3);
+      return {
+        text: `Prada is always elegant! Here are my recommendations:`,
+        products: pradaProducts,
+      };
+    }
+
+    if (lowerMessage.match(/(bag|çanta|bags)/i)) {
+      const bagProducts = products.filter(p => p.category === 'bags').slice(0, 4);
+      return {
+        text: `We have an amazing bag collection! Here are some favorites:`,
+        products: bagProducts,
+      };
+    }
+
+    if (lowerMessage.match(/(jewelry|mücevher|takı)/i)) {
+      const jewelryProducts = products.filter(p => p.category === 'jewelry').slice(0, 4);
+      return {
+        text: `Our jewelry collection is stunning! Take a look:`,
+        products: jewelryProducts,
+      };
+    }
+
+    if (lowerMessage.match(/(recommend|öneri|suggestion|suggest)/i)) {
+      const recommendedProducts = products.slice(0, 4);
+      return {
+        text: `Based on your preferences, I think you'll love these:`,
+        products: recommendedProducts,
+      };
     }
 
     // Thank you
@@ -198,29 +271,53 @@ const ChatScreen = ({ route, navigation }) => {
     setIsTyping(true);
 
     try {
-      // Use Groq AI for SA response
-      const response = await getSAResponse(userText, user.name, messages, language);
-      setIsTyping(false);
+      // First check if local response has products
+      const localResponse = getAdvisorResponse(userText);
 
-      setMessages(prev => [...prev, {
-        id: prev.length + 1,
-        sender: 'advisor',
-        text: response,
-        time: new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }),
-        read: true,
-      }]);
+      if (localResponse && typeof localResponse === 'object' && localResponse.products) {
+        // Local response with products
+        setIsTyping(false);
+        setMessages(prev => [...prev, {
+          id: prev.length + 1,
+          sender: 'advisor',
+          text: localResponse.text,
+          products: localResponse.products,
+          time: new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }),
+          read: true,
+        }]);
+      } else {
+        // Use Groq AI for SA response
+        const response = await getSAResponse(userText, user.name, messages, language);
+        setIsTyping(false);
+
+        setMessages(prev => [...prev, {
+          id: prev.length + 1,
+          sender: 'advisor',
+          text: response,
+          time: new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }),
+          read: true,
+        }]);
+      }
     } catch (error) {
       // Fallback to local response
       const response = getAdvisorResponse(userText);
       setIsTyping(false);
 
-      setMessages(prev => [...prev, {
-        id: prev.length + 1,
+      const messageData = {
+        id: messages.length + 2,
         sender: 'advisor',
-        text: response,
         time: new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }),
         read: true,
-      }]);
+      };
+
+      if (typeof response === 'object' && response.products) {
+        messageData.text = response.text;
+        messageData.products = response.products;
+      } else {
+        messageData.text = response;
+      }
+
+      setMessages(prev => [...prev, messageData]);
     }
   };
 
@@ -304,51 +401,79 @@ const ChatScreen = ({ route, navigation }) => {
         </View>
 
         {messages.map((msg) => (
-          <View
-            key={msg.id}
-            style={[
-              styles.messageWrapper,
-              msg.sender === 'user' ? styles.userMessageWrapper : styles.advisorMessageWrapper,
-            ]}
-          >
-            {msg.sender === 'advisor' && (
-              <View style={styles.messageAvatar}>
-                <Text style={styles.messageAvatarText}>{advisor.avatar}</Text>
-              </View>
-            )}
+          <View key={msg.id}>
             <View
               style={[
-                styles.messageBubble,
-                msg.sender === 'user' ? styles.userBubble : styles.advisorBubble,
+                styles.messageWrapper,
+                msg.sender === 'user' ? styles.userMessageWrapper : styles.advisorMessageWrapper,
               ]}
             >
-              <Text
+              {msg.sender === 'advisor' && (
+                <View style={styles.messageAvatar}>
+                  <Text style={styles.messageAvatarText}>{advisor.avatar}</Text>
+                </View>
+              )}
+              <View
                 style={[
-                  styles.messageText,
-                  msg.sender === 'user' ? styles.userMessageText : styles.advisorMessageText,
+                  styles.messageBubble,
+                  msg.sender === 'user' ? styles.userBubble : styles.advisorBubble,
                 ]}
               >
-                {msg.text}
-              </Text>
-              <View style={styles.messageFooter}>
                 <Text
                   style={[
-                    styles.messageTime,
-                    msg.sender === 'user' ? styles.userMessageTime : styles.advisorMessageTime,
+                    styles.messageText,
+                    msg.sender === 'user' ? styles.userMessageText : styles.advisorMessageText,
                   ]}
                 >
-                  {msg.time}
+                  {msg.text}
                 </Text>
-                {msg.sender === 'user' && (
-                  <Ionicons
-                    name={msg.read ? 'checkmark-done' : 'checkmark'}
-                    size={14}
-                    color={msg.read ? COLORS.gold : COLORS.white}
-                    style={styles.readIcon}
-                  />
-                )}
+                <View style={styles.messageFooter}>
+                  <Text
+                    style={[
+                      styles.messageTime,
+                      msg.sender === 'user' ? styles.userMessageTime : styles.advisorMessageTime,
+                    ]}
+                  >
+                    {msg.time}
+                  </Text>
+                  {msg.sender === 'user' && (
+                    <Ionicons
+                      name={msg.read ? 'checkmark-done' : 'checkmark'}
+                      size={14}
+                      color={msg.read ? COLORS.gold : COLORS.white}
+                      style={styles.readIcon}
+                    />
+                  )}
+                </View>
               </View>
             </View>
+            {/* Product Cards */}
+            {msg.products && msg.products.length > 0 && (
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                style={styles.productCardsContainer}
+              >
+                {msg.products.map((product) => (
+                  <TouchableOpacity
+                    key={product.id}
+                    style={styles.chatProductCard}
+                    onPress={() => navigation.navigate('ProductDetails', { product })}
+                  >
+                    <Image
+                      source={typeof product.image === 'string' ? { uri: product.image } : product.image}
+                      style={styles.chatProductImage}
+                      resizeMode="cover"
+                    />
+                    <View style={styles.chatProductInfo}>
+                      <Text style={styles.chatProductBrand}>{product.brand}</Text>
+                      <Text style={styles.chatProductName} numberOfLines={1}>{product.name}</Text>
+                      <Text style={styles.chatProductPrice}>${product.price.toLocaleString()}</Text>
+                    </View>
+                  </TouchableOpacity>
+                ))}
+              </ScrollView>
+            )}
           </View>
         ))}
 
@@ -709,6 +834,46 @@ const styles = StyleSheet.create({
   },
   sendBtnActive: {
     backgroundColor: COLORS.gold,
+  },
+  // Product Cards in Chat
+  productCardsContainer: {
+    marginLeft: 40,
+    marginTop: 8,
+    marginBottom: 12,
+  },
+  chatProductCard: {
+    width: 140,
+    marginRight: 12,
+    backgroundColor: COLORS.white,
+    borderRadius: 12,
+    overflow: 'hidden',
+    ...SHADOWS.light,
+  },
+  chatProductImage: {
+    width: '100%',
+    height: 120,
+    backgroundColor: COLORS.beige,
+  },
+  chatProductInfo: {
+    padding: 10,
+  },
+  chatProductBrand: {
+    fontSize: 10,
+    color: COLORS.gray,
+    fontWeight: '600',
+    letterSpacing: 0.5,
+  },
+  chatProductName: {
+    fontSize: 13,
+    fontWeight: '500',
+    color: COLORS.black,
+    marginTop: 2,
+  },
+  chatProductPrice: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: COLORS.gold,
+    marginTop: 4,
   },
 });
 

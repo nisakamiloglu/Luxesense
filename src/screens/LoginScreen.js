@@ -8,20 +8,24 @@ import {
   Animated,
   KeyboardAvoidingView,
   Platform,
-  Alert,
+  ActivityIndicator,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import { COLORS, SIZES, SHADOWS } from '../constants/theme';
 import { useApp } from '../context/AppContext';
+import { useToast } from '../context/ToastContext';
+import { loginUser } from '../services/api';
 
 const LoginScreen = ({ navigation }) => {
   const { login } = useApp();
   const { t } = useTranslation();
+  const { showSuccess, showError, showWarning } = useToast();
   const [userType, setUserType] = useState(null); // 'customer' or 'advisor'
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const slideAnim = useRef(new Animated.Value(30)).current;
@@ -41,44 +45,54 @@ const LoginScreen = ({ navigation }) => {
     ]).start();
   }, []);
 
-  const handleLogin = () => {
+  const handleLogin = async () => {
     if (!email || !password) {
-      Alert.alert('Error', 'Please enter email and password');
+      showWarning('Missing Information', 'Please enter email and password');
       return;
     }
 
-    // Demo credentials
-    if (userType === 'customer') {
-      if (email.toLowerCase() === 'alexandra@email.com' && password === '1234') {
-        login('customer');
-        navigation.replace('Splash');
+    setLoading(true);
+    try {
+      const response = await loginUser(email.toLowerCase(), password);
+
+      if (response.success) {
+        const loggedInUserType = response.user.role || userType;
+        showSuccess('Welcome Back!', `Good to see you again!`);
+        login(loggedInUserType, response.user, response.token);
+
+        setTimeout(() => {
+          if (loggedInUserType === 'customer') {
+            navigation.replace('Splash');
+          } else {
+            navigation.replace('AdvisorTabs');
+          }
+        }, 1000);
       } else {
-        Alert.alert('Invalid Credentials', 'Use: alexandra@email.com / 1234');
+        showError('Login Failed', response.message || 'Invalid email or password');
       }
-    } else {
-      if (email.toLowerCase() === 'isabelle@luxesense.com' && password === '1234') {
-        login('advisor');
-        navigation.replace('AdvisorTabs');
-      } else {
-        Alert.alert('Invalid Credentials', 'Use: isabelle@luxesense.com / 1234');
-      }
+    } catch (error) {
+      showError('Connection Error', 'Please check your internet connection');
+    } finally {
+      setLoading(false);
     }
   };
 
-  const prefillCredentials = (type) => {
+  const selectUserType = (type) => {
     setUserType(type);
-    if (type === 'customer') {
-      setEmail('alexandra@email.com');
-      setPassword('1234');
-    } else {
-      setEmail('isabelle@luxesense.com');
-      setPassword('1234');
-    }
+    setEmail('');
+    setPassword('');
   };
 
   if (!userType) {
     return (
       <View style={styles.container}>
+        <TouchableOpacity
+          style={styles.backButton}
+          onPress={() => navigation.goBack()}
+        >
+          <Ionicons name="arrow-back" size={24} color={COLORS.black} />
+        </TouchableOpacity>
+
         <Animated.View
           style={[
             styles.brandSection,
@@ -97,7 +111,7 @@ const LoginScreen = ({ navigation }) => {
 
           <TouchableOpacity
             style={styles.userTypeCard}
-            onPress={() => prefillCredentials('customer')}
+            onPress={() => selectUserType('customer')}
           >
             <View style={styles.userTypeIcon}>
               <Ionicons name="person-outline" size={28} color={COLORS.gold} />
@@ -111,7 +125,7 @@ const LoginScreen = ({ navigation }) => {
 
           <TouchableOpacity
             style={styles.userTypeCard}
-            onPress={() => prefillCredentials('advisor')}
+            onPress={() => selectUserType('advisor')}
           >
             <View style={styles.userTypeIcon}>
               <Ionicons name="briefcase-outline" size={28} color={COLORS.gold} />
@@ -203,10 +217,27 @@ const LoginScreen = ({ navigation }) => {
             <Text style={styles.forgotText}>{t('auth.forgotPassword')}</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity style={styles.loginBtn} onPress={handleLogin}>
-            <Text style={styles.loginBtnText}>{t('auth.login')}</Text>
-            <Ionicons name="arrow-forward" size={20} color={COLORS.white} />
+          <TouchableOpacity
+            style={[styles.loginBtn, loading && styles.loginBtnDisabled]}
+            onPress={handleLogin}
+            disabled={loading}
+          >
+            {loading ? (
+              <ActivityIndicator color={COLORS.white} />
+            ) : (
+              <>
+                <Text style={styles.loginBtnText}>{t('auth.login')}</Text>
+                <Ionicons name="arrow-forward" size={20} color={COLORS.white} />
+              </>
+            )}
           </TouchableOpacity>
+
+          <View style={styles.signupPrompt}>
+            <Text style={styles.signupPromptText}>Don't have an account? </Text>
+            <TouchableOpacity onPress={() => navigation.navigate('Register')}>
+              <Text style={styles.signupLink}>Sign Up</Text>
+            </TouchableOpacity>
+          </View>
         </View>
       </View>
     </KeyboardAvoidingView>
@@ -384,10 +415,27 @@ const styles = StyleSheet.create({
     borderRadius: SIZES.radius,
     gap: 10,
   },
+  loginBtnDisabled: {
+    opacity: 0.7,
+  },
   loginBtnText: {
     fontSize: 16,
     fontWeight: '600',
     color: COLORS.white,
+  },
+  signupPrompt: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    marginTop: 24,
+  },
+  signupPromptText: {
+    fontSize: 14,
+    color: COLORS.gray,
+  },
+  signupLink: {
+    fontSize: 14,
+    color: COLORS.gold,
+    fontWeight: '600',
   },
 });
 

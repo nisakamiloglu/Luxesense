@@ -6,31 +6,47 @@ import {
   ScrollView,
   TouchableOpacity,
   Image,
-  Alert,
+  Modal,
+  Animated,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import { COLORS, SIZES, SHADOWS } from '../constants/theme';
 import { useApp } from '../context/AppContext';
+import { useToast } from '../context/ToastContext';
 
 const ProductDetailsScreen = ({ route, navigation }) => {
-  const { product } = route.params;
+  const { product: rawProduct } = route.params;
   const { addToCart, toggleWishlist, isInWishlist, addToRecentlyViewed } = useApp();
   const { t } = useTranslation();
+  const { showSuccess, showWarning } = useToast();
+
+  // Add default values for missing properties
+  const product = {
+    ...rawProduct,
+    colors: rawProduct.colors || ['#1A1A1A'],
+    colorNames: rawProduct.colorNames || [rawProduct.color || 'Default'],
+    sizes: rawProduct.sizes || ['One Size'],
+    stores: rawProduct.stores || [{ name: 'Paris Flagship', stock: 3 }, { name: 'London Boutique', stock: 2 }],
+    sku: rawProduct.sku || `LX-${rawProduct.id}`,
+    stockCount: rawProduct.stockCount || 5,
+    collection: rawProduct.collection || 'Classic Collection',
+  };
 
   // Track recently viewed
   useEffect(() => {
-    addToRecentlyViewed(product);
-  }, [product.id]);
+    addToRecentlyViewed(rawProduct);
+  }, [rawProduct.id]);
 
   const [selectedColor, setSelectedColor] = useState(0);
   const [selectedSize, setSelectedSize] = useState(null);
   const [showStores, setShowStores] = useState(false);
   const [quantity, setQuantity] = useState(1);
+  const [showCartModal, setShowCartModal] = useState(false);
 
   const handleAddToCart = () => {
     if (!selectedSize && product.sizes[0] !== 'One Size') {
-      Alert.alert('Select Size', 'Please select a size before adding to cart');
+      showWarning('Select Size', 'Please select a size before adding to cart');
       return;
     }
     addToCart(
@@ -39,14 +55,17 @@ const ProductDetailsScreen = ({ route, navigation }) => {
       selectedSize || product.sizes[0],
       quantity
     );
-    Alert.alert(
-      'Added to Cart',
-      `${product.name} has been added to your cart`,
-      [
-        { text: 'Continue Shopping', style: 'cancel' },
-        { text: 'View Cart', onPress: () => navigation.navigate('Cart') },
-      ]
-    );
+    setShowCartModal(true);
+  };
+
+  const handleContinueShopping = () => {
+    setShowCartModal(false);
+    navigation.goBack();
+  };
+
+  const handleGoToCart = () => {
+    setShowCartModal(false);
+    navigation.navigate('Cart');
   };
 
   return (
@@ -255,6 +274,44 @@ const ProductDetailsScreen = ({ route, navigation }) => {
           <Text style={styles.addToCartText}>{t('product.addToCart')}</Text>
         </TouchableOpacity>
       </View>
+
+      {/* Cart Added Modal */}
+      <Modal
+        visible={showCartModal}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setShowCartModal(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.cartModal}>
+            <View style={styles.cartModalIcon}>
+              <Ionicons name="checkmark-circle" size={56} color={COLORS.gold} />
+            </View>
+            <Text style={styles.cartModalTitle}>Added to Cart!</Text>
+            <Text style={styles.cartModalMessage}>
+              {product.name} has been added to your bag
+            </Text>
+
+            <View style={styles.cartModalButtons}>
+              <TouchableOpacity
+                style={styles.continueShoppingBtn}
+                onPress={handleContinueShopping}
+              >
+                <Ionicons name="arrow-back" size={18} color={COLORS.black} />
+                <Text style={styles.continueShoppingText}>Continue Shopping</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={styles.goToCartBtn}
+                onPress={handleGoToCart}
+              >
+                <Ionicons name="bag" size={18} color={COLORS.white} />
+                <Text style={styles.goToCartText}>Go to Cart</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 };
@@ -541,6 +598,68 @@ const styles = StyleSheet.create({
   },
   addToCartText: {
     fontSize: 16,
+    fontWeight: '600',
+    color: COLORS.white,
+  },
+  // Cart Modal Styles
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  cartModal: {
+    width: '85%',
+    backgroundColor: '#FFF9F0',
+    borderRadius: 20,
+    padding: 28,
+    alignItems: 'center',
+    ...SHADOWS.medium,
+  },
+  cartModalIcon: {
+    marginBottom: 16,
+  },
+  cartModalTitle: {
+    fontSize: 22,
+    fontWeight: '600',
+    color: COLORS.black,
+    marginBottom: 8,
+  },
+  cartModalMessage: {
+    fontSize: 14,
+    color: COLORS.gray,
+    textAlign: 'center',
+    marginBottom: 24,
+  },
+  cartModalButtons: {
+    width: '100%',
+    gap: 12,
+  },
+  continueShoppingBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    height: 52,
+    backgroundColor: COLORS.beige,
+    borderRadius: SIZES.radius,
+    gap: 8,
+  },
+  continueShoppingText: {
+    fontSize: 15,
+    fontWeight: '500',
+    color: COLORS.black,
+  },
+  goToCartBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    height: 52,
+    backgroundColor: COLORS.black,
+    borderRadius: SIZES.radius,
+    gap: 8,
+  },
+  goToCartText: {
+    fontSize: 15,
     fontWeight: '600',
     color: COLORS.white,
   },

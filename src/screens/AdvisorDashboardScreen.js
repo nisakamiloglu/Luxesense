@@ -48,7 +48,7 @@ const AdvisorDashboardScreen = ({ navigation }) => {
             style={styles.iconBtn}
             onPress={() => {
               logout();
-              navigation.replace('Login');
+              navigation.replace('Landing');
             }}
           >
             <Ionicons name="log-out-outline" size={24} color={COLORS.black} />

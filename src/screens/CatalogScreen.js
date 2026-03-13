@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import {
   View,
   Text,
@@ -12,7 +12,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
-import { useFocusEffect } from '@react-navigation/native';
+import { useFocusEffect, useScrollToTop } from '@react-navigation/native';
 import { COLORS, SIZES, SHADOWS } from '../constants/theme';
 import { useApp } from '../context/AppContext';
 import { products, categories, brands, priceRanges } from '../constants/mockData';
@@ -26,6 +26,8 @@ const CatalogScreen = ({ navigation, route }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [showFilterModal, setShowFilterModal] = useState(false);
   const [sortBy, setSortBy] = useState('featured');
+  const listRef = useRef(null);
+  useScrollToTop(listRef);
 
   // Update brand when screen is focused and has selectedBrand param
   useFocusEffect(
@@ -161,12 +163,8 @@ const CatalogScreen = ({ navigation, route }) => {
             {/* Brand Filter */}
             <View style={styles.filterSection}>
               <Text style={styles.filterSectionTitle}>Brand</Text>
-              <ScrollView
-                horizontal
-                showsHorizontalScrollIndicator={false}
-                contentContainerStyle={styles.brandScroll}
-              >
-                {brands.slice(0, 12).map((brand) => (
+              <View style={styles.brandGrid}>
+                {brands.map((brand) => (
                   <TouchableOpacity
                     key={brand.id}
                     style={[
@@ -185,32 +183,7 @@ const CatalogScreen = ({ navigation, route }) => {
                     </Text>
                   </TouchableOpacity>
                 ))}
-              </ScrollView>
-              <ScrollView
-                horizontal
-                showsHorizontalScrollIndicator={false}
-                contentContainerStyle={styles.brandScroll}
-              >
-                {brands.slice(12).map((brand) => (
-                  <TouchableOpacity
-                    key={brand.id}
-                    style={[
-                      styles.brandChip,
-                      activeBrand === brand.id && styles.brandChipActive,
-                    ]}
-                    onPress={() => setActiveBrand(brand.id)}
-                  >
-                    <Text
-                      style={[
-                        styles.brandChipText,
-                        activeBrand === brand.id && styles.brandChipTextActive,
-                      ]}
-                    >
-                      {brand.name}
-                    </Text>
-                  </TouchableOpacity>
-                ))}
-              </ScrollView>
+              </View>
             </View>
 
             {/* Price Range */}
@@ -383,12 +356,17 @@ const CatalogScreen = ({ navigation, route }) => {
 
       {/* Products Grid */}
       <FlatList
+        ref={listRef}
         data={filteredProducts}
         renderItem={renderProduct}
         keyExtractor={(item) => item.id.toString()}
         numColumns={2}
         contentContainerStyle={styles.productsContainer}
         showsVerticalScrollIndicator={false}
+        initialNumToRender={6}
+        maxToRenderPerBatch={4}
+        windowSize={5}
+        removeClippedSubviews={true}
         ListEmptyComponent={
           <View style={styles.emptyState}>
             <Ionicons name="search-outline" size={48} color={COLORS.goldMuted} />
@@ -733,6 +711,11 @@ const styles = StyleSheet.create({
   brandScroll: {
     gap: 10,
     marginBottom: 10,
+  },
+  brandGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 10,
   },
   brandChip: {
     paddingHorizontal: 16,

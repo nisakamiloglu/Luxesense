@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -14,29 +14,57 @@ import { COLORS, SIZES, SHADOWS } from '../constants/theme';
 import { useApp } from '../context/AppContext';
 
 const CheckoutScreen = ({ navigation }) => {
-  const { cartItems, getCartTotal, placeOrder } = useApp();
+  const { cartItems, getCartTotal, placeOrder, user } = useApp();
   const { t } = useTranslation();
   const [activeStep, setActiveStep] = useState(0);
 
+  // Parse user fullName into first and last name
+  const getNameParts = () => {
+    const fullName = user?.fullName || user?.name || '';
+    const parts = fullName.split(' ');
+    return {
+      firstName: parts[0] || '',
+      lastName: parts.slice(1).join(' ') || '',
+    };
+  };
+
   const [shippingInfo, setShippingInfo] = useState({
-    firstName: 'Alexandra',
-    lastName: 'Chen',
-    email: 'alexandra.chen@email.com',
-    phone: '+1 (555) 123-4567',
-    address: '123 Fifth Avenue',
-    apartment: 'Apt 42B',
-    city: 'New York',
-    state: 'NY',
-    zipCode: '10001',
-    country: 'United States',
+    firstName: '',
+    lastName: '',
+    email: '',
+    phone: '',
+    address: '',
+    apartment: '',
+    city: '',
+    state: '',
+    zipCode: '',
+    country: '',
   });
 
   const [paymentInfo, setPaymentInfo] = useState({
-    cardNumber: '4242 4242 4242 4242',
-    cardName: 'Alexandra Chen',
-    expiry: '12/28',
-    cvv: '123',
+    cardNumber: '',
+    cardName: '',
+    expiry: '',
+    cvv: '',
   });
+
+  // Update shipping info when user data is available
+  useEffect(() => {
+    if (user) {
+      const { firstName, lastName } = getNameParts();
+      setShippingInfo(prev => ({
+        ...prev,
+        firstName: firstName,
+        lastName: lastName,
+        email: user.email || '',
+        phone: user.phone || '',
+      }));
+      setPaymentInfo(prev => ({
+        ...prev,
+        cardName: user.fullName || user.name || '',
+      }));
+    }
+  }, [user]);
 
   const [selectedShipping, setSelectedShipping] = useState('express');
 

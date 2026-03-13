@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import {
   View,
   Text,
@@ -11,12 +11,15 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
+import { useScrollToTop } from '@react-navigation/native';
 import { COLORS, SIZES, SHADOWS } from '../constants/theme';
 import { useApp } from '../context/AppContext';
 
 const ProfileScreen = ({ navigation }) => {
   const { user, orders, wishlist, getCartCount, logout, language, changeLanguage } = useApp();
   const { t } = useTranslation();
+  const scrollRef = useRef(null);
+  useScrollToTop(scrollRef);
 
   const handleLanguageChange = () => {
     Alert.alert(
@@ -93,7 +96,7 @@ const ProfileScreen = ({ navigation }) => {
     {
       icon: 'settings-outline',
       label: t('profile.settings'),
-      onPress: () => {},
+      onPress: () => navigation.navigate('Settings'),
     },
     {
       icon: 'help-circle-outline',
@@ -120,7 +123,7 @@ const ProfileScreen = ({ navigation }) => {
         </TouchableOpacity>
       </View>
 
-      <ScrollView showsVerticalScrollIndicator={false}>
+      <ScrollView ref={scrollRef} showsVerticalScrollIndicator={false}>
         {/* Profile Card */}
         <View style={styles.profileCard}>
           <View style={styles.avatar}>
@@ -307,7 +310,7 @@ const ProfileScreen = ({ navigation }) => {
           style={styles.logoutBtn}
           onPress={() => {
             logout();
-            navigation.replace('Login');
+            navigation.replace('Landing');
           }}
         >
           <Ionicons name="log-out-outline" size={20} color={COLORS.error} />

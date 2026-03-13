@@ -9,17 +9,21 @@ import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
-  Alert,
+  ActivityIndicator,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { COLORS, SIZES, SHADOWS } from '../constants/theme';
 import { useApp } from '../context/AppContext';
+import { useToast } from '../context/ToastContext';
+import { registerUser } from '../services/api';
 
 const RegisterScreen = ({ navigation }) => {
   const { login } = useApp();
+  const { showSuccess, showError, showWarning } = useToast();
   const [userType, setUserType] = useState(null); // 'customer' or 'advisor'
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   // Form fields
   const [formData, setFormData] = useState({
@@ -58,32 +62,32 @@ const RegisterScreen = ({ navigation }) => {
     const { fullName, email, password, confirmPassword, employeeId, storeLocation } = formData;
 
     if (!fullName.trim()) {
-      Alert.alert('Error', 'Please enter your full name');
+      showWarning('Missing Information', 'Please enter your full name');
       return false;
     }
 
     if (!email.trim() || !email.includes('@')) {
-      Alert.alert('Error', 'Please enter a valid email address');
+      showWarning('Invalid Email', 'Please enter a valid email address');
       return false;
     }
 
     if (password.length < 4) {
-      Alert.alert('Error', 'Password must be at least 4 characters');
+      showWarning('Weak Password', 'Password must be at least 4 characters');
       return false;
     }
 
     if (password !== confirmPassword) {
-      Alert.alert('Error', 'Passwords do not match');
+      showError('Password Mismatch', 'Passwords do not match');
       return false;
     }
 
     if (userType === 'advisor') {
       if (!employeeId.trim()) {
-        Alert.alert('Error', 'Please enter your Employee ID');
+        showWarning('Missing Information', 'Please enter your Employee ID');
         return false;
       }
       if (!storeLocation.trim()) {
-        Alert.alert('Error', 'Please enter your Store Location');
+        showWarning('Missing Information', 'Please enter your Store Location');
         return false;
       }
     }
@@ -91,27 +95,41 @@ const RegisterScreen = ({ navigation }) => {
     return true;
   };
 
-  const handleRegister = () => {
+  const handleRegister = async () => {
     if (!validateForm()) return;
 
-    // For demo, just show success and navigate
-    Alert.alert(
-      'Account Created',
-      `Welcome to LuxeSense AI, ${formData.fullName}!`,
-      [
-        {
-          text: 'Continue',
-          onPress: () => {
-            login(userType);
-            if (userType === 'customer') {
-              navigation.replace('Splash');
-            } else {
-              navigation.replace('AdvisorTabs');
-            }
-          },
-        },
-      ]
-    );
+    setLoading(true);
+    try {
+      const userData = {
+        name: formData.fullName,
+        email: formData.email.toLowerCase(),
+        password: formData.password,
+        role: userType,
+        phone: formData.phone || undefined,
+        employeeId: userType === 'advisor' ? formData.employeeId : undefined,
+        storeLocation: userType === 'advisor' ? formData.storeLocation : undefined,
+      };
+
+      const response = await registerUser(userData);
+
+      if (response.success) {
+        showSuccess('Welcome!', `Account created successfully, ${formData.fullName}!`);
+        login(userType, response.user, response.token);
+        setTimeout(() => {
+          if (userType === 'customer') {
+            navigation.replace('Splash');
+          } else {
+            navigation.replace('AdvisorTabs');
+          }
+        }, 1500);
+      } else {
+        showError('Registration Failed', response.message || 'Please try again');
+      }
+    } catch (error) {
+      showError('Connection Error', 'Please check your internet connection');
+    } finally {
+      setLoading(false);
+    }
   };
 
   // Role Selection Screen
@@ -361,9 +379,19 @@ const RegisterScreen = ({ navigation }) => {
           </Text>
 
           {/* Register Button */}
-          <TouchableOpacity style={styles.registerBtn} onPress={handleRegister}>
-            <Text style={styles.registerBtnText}>Create Account</Text>
-            <Ionicons name="arrow-forward" size={20} color={COLORS.white} />
+          <TouchableOpacity
+            style={[styles.registerBtn, loading && styles.registerBtnDisabled]}
+            onPress={handleRegister}
+            disabled={loading}
+          >
+            {loading ? (
+              <ActivityIndicator color={COLORS.white} />
+            ) : (
+              <>
+                <Text style={styles.registerBtnText}>Create Account</Text>
+                <Ionicons name="arrow-forward" size={20} color={COLORS.white} />
+              </>
+            )}
           </TouchableOpacity>
         </View>
 
@@ -554,6 +582,9 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.black,
     borderRadius: SIZES.radius,
     gap: 10,
+  },
+  registerBtnDisabled: {
+    opacity: 0.7,
   },
   registerBtnText: {
     fontSize: 16,

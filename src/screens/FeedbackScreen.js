@@ -89,14 +89,6 @@ const FeedbackScreen = ({ route, navigation }) => {
       </View>
 
       <ScrollView showsVerticalScrollIndicator={false}>
-        {/* Order Info */}
-        <View style={styles.orderInfo}>
-          <Ionicons name="bag-check" size={24} color={COLORS.success} />
-          <Text style={styles.orderText}>
-            Order {order.orderNumber} delivered
-          </Text>
-        </View>
-
         {/* Overall Rating */}
         <View style={styles.ratingSection}>
           <Text style={styles.ratingTitle}>How was your overall experience?</Text>

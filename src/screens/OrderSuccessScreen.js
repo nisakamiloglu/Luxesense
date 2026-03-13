@@ -235,7 +235,7 @@ const styles = StyleSheet.create({
     width: 88,
     height: 88,
     borderRadius: 44,
-    backgroundColor: COLORS.success,
+    backgroundColor: COLORS.gold,
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 24,
@@ -472,11 +472,13 @@ const styles = StyleSheet.create({
   },
   continueBtn: {
     flex: 1,
+    flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     height: 56,
     backgroundColor: COLORS.black,
     borderRadius: SIZES.radius,
+    gap: 8,
   },
   continueBtnText: {
     fontSize: 15,

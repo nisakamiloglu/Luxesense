@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import {
   View,
   Text,
@@ -9,6 +9,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
+import { useScrollToTop } from '@react-navigation/native';
 import { COLORS, SIZES, SHADOWS } from '../constants/theme';
 import { useApp } from '../context/AppContext';
 import { products } from '../constants/mockData';
@@ -16,6 +17,8 @@ import { products } from '../constants/mockData';
 const WishlistScreen = ({ navigation }) => {
   const { wishlist, toggleWishlist, getCartCount } = useApp();
   const { t } = useTranslation();
+  const listRef = useRef(null);
+  useScrollToTop(listRef);
 
   const wishlistProducts = products.filter((p) => wishlist.includes(p.id));
 
@@ -95,6 +98,7 @@ const WishlistScreen = ({ navigation }) => {
             {wishlistProducts.length} {t('common.items')}
           </Text>
           <FlatList
+            ref={listRef}
             data={wishlistProducts}
             renderItem={renderProduct}
             keyExtractor={(item) => item.id.toString()}

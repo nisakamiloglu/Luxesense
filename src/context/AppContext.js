@@ -7,18 +7,19 @@ export const AppProvider = ({ children }) => {
   // Auth state
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userType, setUserType] = useState(null); // 'customer' or 'advisor'
+  const [token, setToken] = useState(null);
 
   // Customer user state
   const [user, setUser] = useState({
-    id: 1,
-    name: 'Nisa',
-    fullName: 'Nisa Kamiloğlu',
-    email: 'nisa.kamiloglu@email.com',
-    phone: '+90 (555) 123-4567',
-    tier: 'Platinum',
-    memberSince: '2019',
-    totalSpent: 284500,
-    loyaltyPoints: 28450,
+    id: null,
+    name: '',
+    fullName: '',
+    email: '',
+    phone: '',
+    tier: 'Silver',
+    memberSince: new Date().getFullYear().toString(),
+    totalSpent: 0,
+    loyaltyPoints: 0,
     avatar: null,
   });
 
@@ -138,14 +139,50 @@ export const AppProvider = ({ children }) => {
   };
 
   // Auth functions
-  const login = (type) => {
+  const login = (type, userData = null, authToken = null) => {
     setIsLoggedIn(true);
     setUserType(type);
+    if (authToken) setToken(authToken);
+    if (userData) {
+      if (type === 'customer') {
+        setUser(prev => ({
+          ...prev,
+          id: userData.id,
+          name: userData.name?.split(' ')[0] || userData.name,
+          fullName: userData.name,
+          email: userData.email,
+          phone: userData.phone || '',
+        }));
+      } else {
+        setAdvisor(prev => ({
+          ...prev,
+          id: userData.id,
+          name: userData.name?.split(' ')[0] || userData.name,
+          fullName: userData.name,
+          email: userData.email,
+          employeeId: userData.employeeId || '',
+          store: userData.storeLocation || '',
+        }));
+      }
+    }
   };
 
   const logout = () => {
     setIsLoggedIn(false);
     setUserType(null);
+    setToken(null);
+    setUser({
+      id: null,
+      name: '',
+      fullName: '',
+      email: '',
+      phone: '',
+      tier: 'Silver',
+      memberSince: new Date().getFullYear().toString(),
+      totalSpent: 0,
+      loyaltyPoints: 0,
+      avatar: null,
+    });
     // Clear chat messages on logout
     setAiStylistMessages([]);
     setSaChatMessages([]);
@@ -259,6 +296,7 @@ export const AppProvider = ({ children }) => {
       // Auth
       isLoggedIn,
       userType,
+      token,
       login,
       logout,
 

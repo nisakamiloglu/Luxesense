@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback, memo, useRef } from 'react';
 import {
   View,
   Text,
@@ -6,9 +6,11 @@ import {
   ScrollView,
   TouchableOpacity,
   Image,
+  FlatList,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
+import { useScrollToTop } from '@react-navigation/native';
 import { COLORS, SIZES, SHADOWS } from '../constants/theme';
 import { useApp } from '../context/AppContext';
 import { products, aiRecommendations, featuredBrands } from '../constants/mockData';
@@ -17,6 +19,8 @@ const HomeScreen = ({ navigation }) => {
   const { user, getCartCount } = useApp();
   const { t } = useTranslation();
   const [currentRec, setCurrentRec] = useState(0);
+  const scrollRef = useRef(null);
+  useScrollToTop(scrollRef);
 
   const getGreeting = () => {
     const hour = new Date().getHours();
@@ -56,7 +60,7 @@ const HomeScreen = ({ navigation }) => {
         </View>
       </View>
 
-      <ScrollView showsVerticalScrollIndicator={false}>
+      <ScrollView ref={scrollRef} showsVerticalScrollIndicator={false}>
         {/* AI Recommendation Card */}
         <View style={styles.aiCard}>
           <View style={styles.aiHeader}>
@@ -76,6 +80,7 @@ const HomeScreen = ({ navigation }) => {
             <Image
               source={typeof recommendation.product.image === 'string' ? { uri: recommendation.product.image } : recommendation.product.image}
               style={styles.aiProductImage}
+              resizeMode="cover"
             />
             <View style={styles.aiProductInfo}>
               <Text style={styles.aiProductName}>{recommendation.product.name}</Text>
@@ -105,6 +110,7 @@ const HomeScreen = ({ navigation }) => {
                 <Image
                   source={typeof brand.image === 'string' ? { uri: brand.image } : brand.image}
                   style={styles.collectionImage}
+                  resizeMode="cover"
                 />
                 <View style={styles.collectionOverlay}>
                   <Text style={styles.collectionName}>{brand.name}</Text>
@@ -133,6 +139,7 @@ const HomeScreen = ({ navigation }) => {
                 <Image
                   source={typeof product.image === 'string' ? { uri: product.image } : product.image}
                   style={styles.productImage}
+                  resizeMode="cover"
                 />
                 {product.onSale && (
                   <View style={styles.saleBadge}>
@@ -172,6 +179,7 @@ const HomeScreen = ({ navigation }) => {
               <Image
                 source={typeof product.image === 'string' ? { uri: product.image } : product.image}
                 style={styles.trendingImage}
+                resizeMode="cover"
               />
               <View style={styles.trendingInfo}>
                 <Text style={styles.trendingBrand}>{product.brand}</Text>
@@ -260,7 +268,9 @@ const styles = StyleSheet.create({
     color: COLORS.white,
   },
   aiCard: {
-    margin: SIZES.padding,
+    marginHorizontal: SIZES.padding,
+    marginTop: SIZES.padding,
+    marginBottom: 4,
     padding: SIZES.padding,
     backgroundColor: COLORS.white,
     borderRadius: SIZES.radius,
@@ -320,8 +330,8 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   section: {
-    marginTop: 8,
-    paddingVertical: 16,
+    marginTop: 0,
+    paddingVertical: 8,
   },
   sectionHeader: {
     flexDirection: 'row',
@@ -341,8 +351,8 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
   collectionCard: {
-    width: 200,
-    height: 120,
+    width: 320,
+    height: 200,
     marginLeft: SIZES.padding,
     borderRadius: SIZES.radius,
     overflow: 'hidden',

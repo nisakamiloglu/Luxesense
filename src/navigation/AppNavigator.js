@@ -21,6 +21,7 @@ import OrderSuccessScreen from '../screens/OrderSuccessScreen';
 import FeedbackScreen from '../screens/FeedbackScreen';
 import WishlistScreen from '../screens/WishlistScreen';
 import ProfileScreen from '../screens/ProfileScreen';
+import SettingsScreen from '../screens/SettingsScreen';
 import AIStylistScreen from '../screens/AIStylistScreen';
 import ChatScreen from '../screens/ChatScreen';
 
@@ -163,6 +164,7 @@ const AppNavigator = () => {
       <Stack.Screen name="Feedback" component={FeedbackScreen} />
       <Stack.Screen name="AIStylist" component={AIStylistScreen} />
       <Stack.Screen name="Chat" component={ChatScreen} />
+      <Stack.Screen name="Settings" component={SettingsScreen} />
 
       {/* Advisor Flow */}
       <Stack.Screen name="AdvisorTabs" component={AdvisorTabs} />
