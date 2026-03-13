@@ -33,12 +33,12 @@ const CheckoutScreen = ({ navigation }) => {
     lastName: '',
     email: '',
     phone: '',
-    address: '',
-    apartment: '',
-    city: '',
-    state: '',
-    zipCode: '',
-    country: '',
+    address: 'Bağdat Caddesi No: 123',
+    apartment: 'Daire 5',
+    city: 'İstanbul',
+    state: 'Kadıköy',
+    zipCode: '34710',
+    country: 'Türkiye',
   });
 
   const [paymentInfo, setPaymentInfo] = useState({

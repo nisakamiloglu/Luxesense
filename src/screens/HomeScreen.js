@@ -351,7 +351,7 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
   collectionCard: {
-    width: 320,
+    width: 340,
     height: 200,
     marginLeft: SIZES.padding,
     borderRadius: SIZES.radius,
