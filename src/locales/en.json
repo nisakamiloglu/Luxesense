@@ -37,7 +37,12 @@
     "brands": "Brands",
     "newArrivals": "Explore the Collection",
     "trendingNow": "Trending Now",
-    "aiStylist": "AI Stylist"
+    "aiStylist": "AI Stylist",
+    "shopWomen": "WOMEN",
+    "shopMen": "MEN",
+    "popularSearches": "POPULAR SEARCHES",
+    "recentlyViewed": "Recently Viewed",
+    "pickedForYou": "Picked for You"
   },
   "catalog": {
     "allProducts": "All Products",
@@ -214,9 +219,20 @@
     "customers": "Customers",
     "calendar": "Calendar",
     "products": "Products",
+    "history": "History",
     "monthlySales": "Monthly Sales",
     "clientsServed": "Clients Served",
     "avgTicket": "Avg. Ticket",
-    "conversion": "Conversion"
+    "conversion": "Conversion",
+    "purchaseHistory": "Purchase History",
+    "totalOrders": "Total Orders",
+    "revenue": "Revenue",
+    "avgOrder": "Avg. Order",
+    "recentPurchases": "Recent Purchases",
+    "aiRecommendation": "AI Recommendation",
+    "viewProduct": "View Product",
+    "allTime": "All Time",
+    "thisWeek": "This Week",
+    "thisMonth": "This Month"
   }
 }

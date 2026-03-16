@@ -1,4 +1,4 @@
-import React, { useState, useCallback, memo, useRef } from 'react';
+import React, { useState, useRef } from 'react';
 import {
   View,
   Text,
@@ -14,46 +14,59 @@ import { useTranslation } from 'react-i18next';
 import { useScrollToTop } from '@react-navigation/native';
 import { COLORS, SIZES, SHADOWS } from '../constants/theme';
 import { useApp } from '../context/AppContext';
-import { products, aiRecommendations, featuredBrands } from '../constants/mockData';
+import { products, featuredBrands } from '../constants/mockData';
 
 const { width } = Dimensions.get('window');
 
-const categories = [
-  { id: 'bags', name: 'Bags', icon: 'bag-outline' },
-  { id: 'shoes', name: 'Shoes', icon: 'footsteps-outline' },
-  { id: 'jewelry', name: 'Jewelry', icon: 'diamond-outline' },
-  { id: 'watches', name: 'Watches', icon: 'watch-outline' },
-  { id: 'tops', name: 'Tops', icon: 'shirt-outline' },
-  { id: 'jackets', name: 'Jackets', icon: 'snow-outline' },
+const banners = [
+  {
+    id: 1,
+    image: require('../images/banner1.webp'),
+    titleTop: 'THIS SEASON',
+    titleBottom: 'Must-Haves',
+    navigateTo: 'Catalog',
+  },
+  {
+    id: 2,
+    image: require('../images/banner6.webp'),
+    titleTop: "EDITOR'S PICK",
+    titleBottom: 'Curated Trends',
+    navigateTo: 'Catalog',
+  },
+  {
+    id: 3,
+    image: require('../images/hermes1.webp'),
+    titleTop: 'SIGNATURE PIECES',
+    titleBottom: 'The Essentials',
+    navigateTo: 'Catalog',
+  },
 ];
 
 const HomeScreen = ({ navigation }) => {
   const { user, getCartCount } = useApp();
   const { t } = useTranslation();
-  const [currentRec, setCurrentRec] = useState(0);
   const [searchQuery, setSearchQuery] = useState('');
+  const [activeBanner, setActiveBanner] = useState(0);
   const scrollRef = useRef(null);
+  const bannerRef = useRef(null);
   useScrollToTop(scrollRef);
 
-  const getGreeting = () => {
-    const hour = new Date().getHours();
-    if (hour < 12) return t('home.goodMorning');
-    if (hour < 17) return t('home.goodAfternoon');
-    return t('home.goodEvening');
-  };
-
-  const recommendation = aiRecommendations[currentRec];
-
-  const dismissRecommendation = () => {
-    if (currentRec < aiRecommendations.length - 1) {
-      setCurrentRec(currentRec + 1);
-    }
+  const onBannerScroll = (event) => {
+    const slideIndex = Math.round(event.nativeEvent.contentOffset.x / (width - 28));
+    setActiveBanner(slideIndex);
   };
 
   const handleSearch = () => {
     if (searchQuery.trim()) {
       navigation.navigate('Catalog', { searchQuery });
     }
+  };
+
+  const getGreeting = () => {
+    const hour = new Date().getHours();
+    if (hour < 12) return t('home.goodMorning');
+    if (hour < 17) return t('home.goodAfternoon');
+    return t('home.goodEvening');
   };
 
   return (
@@ -101,48 +114,81 @@ const HomeScreen = ({ navigation }) => {
       </View>
 
       <ScrollView ref={scrollRef} showsVerticalScrollIndicator={false}>
-        {/* New Collection Banner */}
-        <TouchableOpacity
-          style={styles.bannerContainer}
-          onPress={() => navigation.navigate('Catalog')}
-          activeOpacity={0.9}
+        {/* Category Icons */}
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          style={styles.categoriesScroll}
+          contentContainerStyle={styles.categoriesContent}
         >
-          <Image
-            source={{ uri: 'https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=800' }}
-            style={styles.bannerImage}
-            resizeMode="cover"
-          />
-          <View style={styles.bannerOverlay}>
-            <Text style={styles.bannerSubtitle}>2024</Text>
-            <Text style={styles.bannerTitle}>New Collection</Text>
-            <View style={styles.bannerBtn}>
-              <Text style={styles.bannerBtnText}>{t('home.newArrivals')}</Text>
-              <Ionicons name="arrow-forward" size={16} color={COLORS.black} />
-            </View>
-          </View>
-        </TouchableOpacity>
+          {[
+            { id: 'clothing', icon: 'shirt-outline', label: t('catalog.clothing') },
+            { id: 'bags', icon: 'bag-handle-outline', label: t('catalog.bags') },
+            { id: 'shoes', icon: 'footsteps-outline', label: t('catalog.shoes') },
+            { id: 'jewelry', icon: 'diamond-outline', label: t('catalog.jewelry') },
+            { id: 'watches', icon: 'watch-outline', label: t('catalog.watches') },
+            { id: 'accessories', icon: 'glasses-outline', label: t('catalog.accessories') },
+          ].map((cat) => (
+            <TouchableOpacity
+              key={cat.id}
+              style={styles.categoryPill}
+              onPress={() => navigation.navigate('Catalog', { selectedCategory: cat.id })}
+            >
+              <Ionicons name={cat.icon} size={16} color={COLORS.gold} />
+              <Text style={styles.categoryPillText}>{cat.label}</Text>
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
 
-        {/* Categories */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>{t('catalog.allProducts')}</Text>
-          <View style={styles.categoriesGrid}>
-            {categories.map((category) => (
+        {/* Hero Banner Slider */}
+        <View style={styles.bannerContainer}>
+          <ScrollView
+            ref={bannerRef}
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            onScroll={onBannerScroll}
+            scrollEventThrottle={16}
+            snapToInterval={width - 28}
+            snapToAlignment="center"
+            decelerationRate="fast"
+            contentContainerStyle={styles.bannerScrollContent}
+          >
+            {banners.map((banner) => (
               <TouchableOpacity
-                key={category.id}
-                style={styles.categoryItem}
-                onPress={() => navigation.navigate('Catalog', { selectedCategory: category.id })}
+                key={banner.id}
+                style={styles.heroBanner}
+                onPress={() => navigation.navigate(banner.navigateTo)}
+                activeOpacity={0.9}
               >
-                <View style={styles.categoryIcon}>
-                  <Ionicons name={category.icon} size={24} color={COLORS.gold} />
+                <Image
+                  source={banner.image}
+                  style={styles.heroBannerImage}
+                  resizeMode="cover"
+                />
+                <View style={styles.heroBannerOverlay}>
+                  <Text style={styles.heroBannerTitle}>{banner.titleTop}</Text>
+                  <Text style={styles.heroBannerTitleAccent}>{banner.titleBottom}</Text>
+                  <View style={styles.heroBannerLine} />
                 </View>
-                <Text style={styles.categoryName}>{category.name}</Text>
               </TouchableOpacity>
+            ))}
+          </ScrollView>
+          {/* Pagination Dots */}
+          <View style={styles.paginationDots}>
+            {banners.map((_, index) => (
+              <View
+                key={index}
+                style={[
+                  styles.dot,
+                  activeBanner === index && styles.dotActive,
+                ]}
+              />
             ))}
           </View>
         </View>
 
         {/* Brands */}
-        <View style={styles.section}>
+        <View style={[styles.section, styles.sectionLight]}>
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>{t('home.brands')}</Text>
             <TouchableOpacity onPress={() => navigation.navigate('Catalog')}>
@@ -214,43 +260,12 @@ const HomeScreen = ({ navigation }) => {
           </ScrollView>
         </View>
 
-        {/* AI Recommendation Card */}
-        <View style={styles.aiCard}>
-          <View style={styles.aiHeader}>
-            <View style={styles.aiTitleRow}>
-              <Ionicons name="sparkles" size={18} color={COLORS.gold} />
-              <Text style={styles.aiTitle}>{t('home.aiRecommendation')}</Text>
-            </View>
-            <TouchableOpacity onPress={dismissRecommendation}>
-              <Ionicons name="close" size={20} color={COLORS.gray} />
-            </TouchableOpacity>
-          </View>
-          <Text style={styles.aiMessage}>{recommendation.message}</Text>
-          <TouchableOpacity
-            style={styles.aiProductCard}
-            onPress={() => navigation.navigate('ProductDetails', { product: recommendation.product })}
-          >
-            <Image
-              source={typeof recommendation.product.image === 'string' ? { uri: recommendation.product.image } : recommendation.product.image}
-              style={styles.aiProductImage}
-              resizeMode="cover"
-            />
-            <View style={styles.aiProductInfo}>
-              <Text style={styles.aiProductName}>{recommendation.product.name}</Text>
-              <Text style={styles.aiProductPrice}>
-                ${recommendation.product.price.toLocaleString()}
-              </Text>
-            </View>
-            <Ionicons name="chevron-forward" size={20} color={COLORS.gold} />
-          </TouchableOpacity>
-        </View>
-
         {/* Trending Now */}
-        <View style={styles.section}>
-          <View style={styles.sectionHeader}>
+        <View style={[styles.section, styles.sectionDark]}>
+          <View style={[styles.sectionHeader, { paddingLeft: 36 }]}>
             <Text style={styles.sectionTitle}>{t('home.trendingNow')}</Text>
           </View>
-          {products.slice(6, 8).map((product) => (
+          {products.slice(6, 11).map((product) => (
             <TouchableOpacity
               key={product.id}
               style={styles.trendingCard}
@@ -379,195 +394,105 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     ...SHADOWS.light,
   },
-  // Banner
+  // Category Pills
+  categoriesScroll: {
+    marginBottom: 20,
+  },
+  categoriesContent: {
+    paddingHorizontal: SIZES.padding,
+    gap: 10,
+    flexDirection: 'row',
+  },
+  categoryPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    backgroundColor: COLORS.white,
+    borderRadius: 20,
+    gap: 6,
+    ...SHADOWS.light,
+  },
+  categoryPillText: {
+    fontSize: 13,
+    color: COLORS.black,
+    fontWeight: '500',
+  },
+  // Hero Banner Slider
   bannerContainer: {
-    marginHorizontal: SIZES.padding,
+    marginBottom: 8,
+  },
+  bannerScrollContent: {
+    paddingHorizontal: SIZES.padding,
+  },
+  heroBanner: {
+    width: width - 40,
     height: 200,
     borderRadius: SIZES.radius,
     overflow: 'hidden',
-    marginBottom: 24,
+    marginRight: 12,
   },
-  bannerImage: {
+  heroBannerImage: {
     width: '100%',
     height: '100%',
   },
-  bannerOverlay: {
+  heroBannerOverlay: {
     position: 'absolute',
     top: 0,
     left: 0,
     right: 0,
     bottom: 0,
-    backgroundColor: 'rgba(0,0,0,0.3)',
+    backgroundColor: 'rgba(0,0,0,0.4)',
     justifyContent: 'center',
-    paddingHorizontal: 24,
+    alignItems: 'center',
   },
-  bannerSubtitle: {
+  heroBannerTitle: {
     fontSize: 14,
-    color: COLORS.gold,
-    fontWeight: '600',
-    letterSpacing: 2,
-  },
-  bannerTitle: {
-    fontSize: 32,
-    fontWeight: '600',
     color: COLORS.white,
+    fontWeight: '400',
+    letterSpacing: 6,
+  },
+  heroBannerTitleAccent: {
+    fontSize: 36,
+    color: COLORS.white,
+    fontWeight: '200',
+    letterSpacing: 4,
+    fontStyle: 'italic',
     marginTop: 4,
-    marginBottom: 16,
   },
-  bannerBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    alignSelf: 'flex-start',
-    backgroundColor: COLORS.white,
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    borderRadius: 20,
-    gap: 8,
-  },
-  bannerBtnText: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: COLORS.black,
-  },
-  // Categories
-  categoriesGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    paddingHorizontal: SIZES.padding,
-    gap: 12,
-  },
-  categoryItem: {
-    width: (width - SIZES.padding * 2 - 24) / 3,
-    alignItems: 'center',
-    paddingVertical: 16,
-    backgroundColor: COLORS.white,
-    borderRadius: SIZES.radius,
-    ...SHADOWS.light,
-  },
-  categoryIcon: {
+  heroBannerLine: {
     width: 50,
-    height: 50,
-    borderRadius: 25,
-    backgroundColor: COLORS.beige,
+    height: 1,
+    backgroundColor: COLORS.gold,
+    marginTop: 20,
+  },
+  paginationDots: {
+    flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 8,
+    marginTop: 12,
+    gap: 8,
   },
-  categoryName: {
-    fontSize: 12,
-    fontWeight: '500',
-    color: COLORS.black,
-  },
-  // Sections
-  section: {
-    marginTop: 24,
-  },
-  sectionHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: SIZES.padding,
-    marginBottom: 16,
-  },
-  sectionTitle: {
-    fontSize: 20,
-    fontWeight: '500',
-    color: COLORS.black,
-  },
-  seeAll: {
-    fontSize: 13,
-    color: COLORS.gold,
-    fontWeight: '500',
-  },
-  // Brand Cards (narrower and taller)
-  brandCard: {
-    width: 150,
-    height: 220,
-    marginLeft: SIZES.padding,
-    borderRadius: SIZES.radius,
-    overflow: 'hidden',
-  },
-  brandImage: {
-    width: '100%',
-    height: '100%',
-  },
-  brandOverlay: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    padding: 12,
-    backgroundColor: 'rgba(0,0,0,0.5)',
-  },
-  brandName: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: COLORS.white,
-  },
-  brandCount: {
-    fontSize: 11,
-    color: 'rgba(255,255,255,0.8)',
-    marginTop: 2,
-  },
-  // Product Cards
-  productCard: {
-    width: 160,
-    marginLeft: SIZES.padding,
-  },
-  productImage: {
-    width: '100%',
-    height: 200,
-    borderRadius: SIZES.radius,
-    backgroundColor: COLORS.beige,
-  },
-  saleBadge: {
-    position: 'absolute',
-    top: 8,
-    left: 8,
-    backgroundColor: COLORS.error,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
+  dot: {
+    width: 8,
+    height: 8,
     borderRadius: 4,
+    backgroundColor: COLORS.beigeDark,
   },
-  saleBadgeText: {
-    fontSize: 10,
-    fontWeight: '600',
-    color: COLORS.white,
+  dotActive: {
+    backgroundColor: COLORS.gold,
+    width: 24,
   },
-  productInfo: {
-    marginTop: 10,
-  },
-  productBrand: {
-    fontSize: 11,
-    color: COLORS.gray,
-    letterSpacing: 0.5,
-  },
-  productName: {
-    fontSize: 14,
-    fontWeight: '500',
-    color: COLORS.black,
-    marginTop: 2,
-  },
-  priceRow: {
+  // Section Title Row
+  sectionTitleRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
-    marginTop: 4,
-  },
-  productPrice: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: COLORS.gold,
-  },
-  originalPrice: {
-    fontSize: 12,
-    color: COLORS.gray,
-    textDecorationLine: 'line-through',
   },
   // AI Card
   aiCard: {
     marginHorizontal: SIZES.padding,
-    marginTop: 24,
+    marginBottom: 20,
     padding: SIZES.padding,
     backgroundColor: COLORS.white,
     borderRadius: SIZES.radius,
@@ -626,13 +551,129 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     marginTop: 2,
   },
+  // Sections
+  section: {
+    marginBottom: 24,
+    paddingVertical: 20,
+  },
+  sectionLight: {
+    backgroundColor: COLORS.white,
+  },
+  sectionDark: {
+    backgroundColor: COLORS.beige,
+    marginHorizontal: -SIZES.padding,
+    paddingHorizontal: 0,
+    paddingBottom: 30,
+  },
+  sectionHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: SIZES.padding,
+    marginBottom: 16,
+  },
+  sectionTitle: {
+    fontSize: 20,
+    fontWeight: '500',
+    color: COLORS.black,
+  },
+  seeAll: {
+    fontSize: 13,
+    color: COLORS.gold,
+    fontWeight: '500',
+  },
+  // Brand Cards
+  brandCard: {
+    width: 240,
+    height: 200,
+    marginLeft: SIZES.padding,
+    borderRadius: SIZES.radius,
+    overflow: 'hidden',
+  },
+  brandImage: {
+    width: '100%',
+    height: '100%',
+  },
+  brandOverlay: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    padding: 16,
+    backgroundColor: 'rgba(0,0,0,0.4)',
+  },
+  brandName: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: COLORS.white,
+  },
+  brandCount: {
+    fontSize: 12,
+    color: 'rgba(255,255,255,0.8)',
+    marginTop: 2,
+  },
+  // Product Cards
+  productCard: {
+    width: 160,
+    marginLeft: SIZES.padding,
+  },
+  productImage: {
+    width: '100%',
+    height: 200,
+    borderRadius: SIZES.radius,
+    backgroundColor: COLORS.beige,
+  },
+  saleBadge: {
+    position: 'absolute',
+    top: 8,
+    left: 8,
+    backgroundColor: COLORS.error,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 4,
+  },
+  saleBadgeText: {
+    fontSize: 10,
+    fontWeight: '600',
+    color: COLORS.white,
+  },
+  productInfo: {
+    marginTop: 10,
+  },
+  productBrand: {
+    fontSize: 11,
+    color: COLORS.gray,
+    letterSpacing: 0.5,
+  },
+  productName: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: COLORS.black,
+    marginTop: 2,
+  },
+  priceRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginTop: 4,
+  },
+  productPrice: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: COLORS.gold,
+  },
+  originalPrice: {
+    fontSize: 12,
+    color: COLORS.gray,
+    textDecorationLine: 'line-through',
+  },
   // Trending
   trendingCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginHorizontal: SIZES.padding,
-    marginBottom: 12,
-    padding: 12,
+    marginHorizontal: 36,
+    marginBottom: 10,
+    padding: 10,
     backgroundColor: COLORS.white,
     borderRadius: SIZES.radius,
     ...SHADOWS.light,
@@ -679,9 +720,11 @@ const styles = StyleSheet.create({
     right: SIZES.padding,
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: COLORS.black,
+    backgroundColor: 'rgba(255, 253, 245, 0.92)',
     borderRadius: 30,
     paddingRight: 20,
+    borderWidth: 1,
+    borderColor: COLORS.goldLight,
     ...SHADOWS.medium,
   },
   aiStylistInner: {
@@ -696,7 +739,7 @@ const styles = StyleSheet.create({
     marginLeft: 10,
     fontSize: 14,
     fontWeight: '600',
-    color: COLORS.white,
+    color: COLORS.black,
   },
 });
 

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   View,
   Text,
@@ -17,6 +17,12 @@ const CheckoutScreen = ({ navigation }) => {
   const { cartItems, getCartTotal, placeOrder, user } = useApp();
   const { t } = useTranslation();
   const [activeStep, setActiveStep] = useState(0);
+  const scrollViewRef = useRef(null);
+
+  // Scroll to top when step changes
+  useEffect(() => {
+    scrollViewRef.current?.scrollTo({ y: 0, animated: true });
+  }, [activeStep]);
 
   // Parse user fullName into first and last name
   const getNameParts = () => {
@@ -444,7 +450,7 @@ const CheckoutScreen = ({ navigation }) => {
         ))}
       </View>
 
-      <ScrollView showsVerticalScrollIndicator={false}>
+      <ScrollView ref={scrollViewRef} showsVerticalScrollIndicator={false}>
         {activeStep === 0 && renderShippingStep()}
         {activeStep === 1 && renderPaymentStep()}
         {activeStep === 2 && renderReviewStep()}

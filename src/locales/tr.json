@@ -37,7 +37,12 @@
     "brands": "Markalar",
     "newArrivals": "Koleksiyonu Keşfet",
     "trendingNow": "Trend Olanlar",
-    "aiStylist": "AI Stilist"
+    "aiStylist": "AI Stilist",
+    "shopWomen": "KADIN",
+    "shopMen": "ERKEK",
+    "popularSearches": "POPÜLER ARAMALAR",
+    "recentlyViewed": "Son Görüntülenenler",
+    "pickedForYou": "Senin İçin Seçtiklerimiz"
   },
   "catalog": {
     "allProducts": "Tüm Ürünler",
@@ -255,10 +260,21 @@
     "customers": "Müşteriler",
     "calendar": "Takvim",
     "products": "Ürünler",
+    "history": "Geçmiş",
     "monthlySales": "Aylık Satış",
     "clientsServed": "Hizmet Verilen",
     "avgTicket": "Ort. Sepet",
-    "conversion": "Dönüşüm"
+    "conversion": "Dönüşüm",
+    "purchaseHistory": "Satın Alma Geçmişi",
+    "totalOrders": "Toplam Sipariş",
+    "revenue": "Gelir",
+    "avgOrder": "Ort. Sipariş",
+    "recentPurchases": "Son Satın Almalar",
+    "aiRecommendation": "AI Öneri",
+    "viewProduct": "Ürünü Gör",
+    "allTime": "Tüm Zamanlar",
+    "thisWeek": "Bu Hafta",
+    "thisMonth": "Bu Ay"
   },
   "landing": {
     "tagline": "Lüks Alışverişin Yeni Yolu",

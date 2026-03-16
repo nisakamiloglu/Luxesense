@@ -11,6 +11,7 @@ import {
   Image,
   Linking,
   Alert,
+  Keyboard,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
@@ -340,11 +341,21 @@ const ChatScreen = ({ route, navigation }) => {
     scrollViewRef.current?.scrollToEnd({ animated: true });
   }, [messages]);
 
+  // Scroll to end when keyboard shows
+  useEffect(() => {
+    const keyboardDidShow = Keyboard.addListener('keyboardDidShow', () => {
+      setTimeout(() => {
+        scrollViewRef.current?.scrollToEnd({ animated: true });
+      }, 100);
+    });
+    return () => keyboardDidShow.remove();
+  }, []);
+
   return (
     <KeyboardAvoidingView
       style={styles.container}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      keyboardVerticalOffset={0}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 0}
     >
       {/* Header */}
       <View style={styles.header}>

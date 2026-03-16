@@ -10,6 +10,7 @@ import {
   Platform,
   Image,
   Animated,
+  Keyboard,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
@@ -43,6 +44,16 @@ const AIStylistScreen = ({ navigation }) => {
     recentTopics: [],
   });
   const scrollViewRef = useRef();
+
+  // Scroll to end when keyboard shows
+  useEffect(() => {
+    const keyboardDidShow = Keyboard.addListener('keyboardDidShow', () => {
+      setTimeout(() => {
+        scrollViewRef.current?.scrollToEnd({ animated: true });
+      }, 100);
+    });
+    return () => keyboardDidShow.remove();
+  }, []);
 
   const quickPrompts = [
     { icon: 'sparkles-outline', text: t('aiStylist.styleQuiz') },

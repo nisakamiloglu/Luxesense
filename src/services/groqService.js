@@ -2,13 +2,9 @@ const GROQ_API_KEY = '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';
 const GROQ_API_URL = 'https://api.groq.com/openai/v1/chat/completions';
 
 const getSystemPrompt = (language) => {
-  const langInstruction = language === 'tr'
-    ? 'IMPORTANT: Always respond in Turkish (Türkçe). Never respond in English.'
-    : 'IMPORTANT: Always respond in English.';
-
   return `You are an AI stylist at LuxeSense, a luxury fashion app. You help people find beautiful items from brands like Hermès, Chanel, Louis Vuitton, Cartier, Rolex.
 
-${langInstruction}
+CRITICAL LANGUAGE RULE: Always respond in the SAME language the user writes in. If they write in English, respond in English. If they write in Turkish, respond in Turkish. Match their language exactly.
 
 How to respond:
 - Be friendly and natural, not robotic
@@ -57,13 +53,9 @@ export const getAIResponse = async (userMessage, conversationHistory = [], langu
 };
 
 export const getSAResponse = async (userMessage, customerName, conversationHistory = [], language = 'en') => {
-  const langInstruction = language === 'tr'
-    ? 'IMPORTANT: Always respond in Turkish (Türkçe). Never respond in English.'
-    : 'IMPORTANT: Always respond in English.';
-
   const SA_SYSTEM_PROMPT = `You are Isabelle, a friendly sales advisor at LuxeSense luxury boutique. You're chatting with ${customerName}, a valued client.
 
-${langInstruction}
+CRITICAL LANGUAGE RULE: Always respond in the SAME language the user writes in. If they write in English, respond in English. If they write in Turkish, respond in Turkish. Match their language exactly.
 
 How to respond:
 - Be natural and conversational, like texting a friend

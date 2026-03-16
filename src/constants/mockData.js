@@ -501,7 +501,9 @@ export const brands = [
 // Categories
 export const categories = [
   { id: 'all', name: 'All', icon: 'grid-outline' },
+  { id: 'clothing', name: 'Clothing', icon: 'shirt-outline' },
   { id: 'bags', name: 'Bags', icon: 'bag-outline' },
+  { id: 'shoes', name: 'Shoes', icon: 'footsteps-outline' },
   { id: 'jewelry', name: 'Jewelry', icon: 'diamond-outline' },
   { id: 'watches', name: 'Watches', icon: 'watch-outline' },
   { id: 'accessories', name: 'Accessories', icon: 'glasses-outline' },
@@ -509,7 +511,7 @@ export const categories = [
 
 // Featured Brands for Home Page
 export const featuredBrands = [
-  { id: 'HERMÈS', name: 'Hermès', image: require('../images/constance.webp'), itemCount: 7 },
+  { id: 'HERMÈS', name: 'Hermès', image: require('../images/hermes3.webp'), itemCount: 7 },
   { id: 'CHANEL', name: 'Chanel', image: require('../images/boybag.webp'), itemCount: 5 },
   { id: 'DIOR', name: 'Dior', image: require('../images/dior.webp'), itemCount: 5 },
   { id: 'LOUIS VUITTON', name: 'Louis Vuitton', image: PLACEHOLDER, itemCount: 5 },

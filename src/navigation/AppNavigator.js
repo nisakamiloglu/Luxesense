@@ -32,6 +32,9 @@ import AdvisorDashboardScreen from '../screens/AdvisorDashboardScreen';
 import CustomersScreen from '../screens/CustomersScreen';
 import CustomerDetailScreen from '../screens/CustomerDetailScreen';
 import AdvisorCalendarScreen from '../screens/AdvisorCalendarScreen';
+import AdvisorPurchaseHistoryScreen from '../screens/AdvisorPurchaseHistoryScreen';
+import AdvisorChatListScreen from '../screens/AdvisorChatListScreen';
+import AdvisorChatScreen from '../screens/AdvisorChatScreen';
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
@@ -105,11 +108,11 @@ const AdvisorTabs = () => {
             case 'Customers':
               iconName = focused ? 'people' : 'people-outline';
               break;
-            case 'Calendar':
-              iconName = focused ? 'calendar' : 'calendar-outline';
+            case 'History':
+              iconName = focused ? 'receipt' : 'receipt-outline';
               break;
-            case 'Products':
-              iconName = focused ? 'bag' : 'bag-outline';
+            case 'Messages':
+              iconName = focused ? 'chatbubbles' : 'chatbubbles-outline';
               break;
             default:
               iconName = 'ellipse';
@@ -136,8 +139,8 @@ const AdvisorTabs = () => {
     >
       <Tab.Screen name="Dashboard" component={AdvisorDashboardScreen} />
       <Tab.Screen name="Customers" component={CustomersScreen} />
-      <Tab.Screen name="Calendar" component={AdvisorCalendarScreen} />
-      <Tab.Screen name="Products" component={CatalogScreen} />
+      <Tab.Screen name="History" component={AdvisorPurchaseHistoryScreen} />
+      <Tab.Screen name="Messages" component={AdvisorChatListScreen} />
     </Tab.Navigator>
   );
 };
@@ -190,6 +193,7 @@ const AppNavigator = () => {
       {/* Advisor Flow */}
       <Stack.Screen name="AdvisorTabs" component={AdvisorTabs} />
       <Stack.Screen name="CustomerDetail" component={CustomerDetailScreen} />
+      <Stack.Screen name="AdvisorChat" component={AdvisorChatScreen} />
     </Stack.Navigator>
   );
 };
