@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -7,18 +7,56 @@ import {
   TouchableOpacity,
   Image,
 } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import { COLORS, SIZES, SHADOWS } from '../constants/theme';
 import { useApp } from '../context/AppContext';
+import { useToast } from '../context/ToastContext';
 
 const CartScreen = ({ navigation }) => {
-  const { cartItems, removeFromCart, updateCartQuantity, getCartTotal } = useApp();
+  const { cartItems, removeFromCart, updateCartQuantity, getCartTotal, token, setCartItems } = useApp();
   const { t } = useTranslation();
+  const { showWarning, showSuccess } = useToast();
+  const [savedCartItems, setSavedCartItems] = useState([]);
+
+  // Check AsyncStorage for saved cart on mount
+  useEffect(() => {
+    const checkSavedCart = async () => {
+      try {
+        const savedCart = await AsyncStorage.getItem('savedCart');
+        if (savedCart) {
+          const parsedCart = JSON.parse(savedCart);
+          if (parsedCart && parsedCart.length > 0) {
+            setSavedCartItems(parsedCart);
+          }
+        }
+      } catch (e) {
+        console.error('Error loading saved cart:', e);
+      }
+    };
+    checkSavedCart();
+  }, []);
 
   const subtotal = getCartTotal();
   const shipping = 0;
   const total = subtotal + shipping;
+
+  const restoreSavedCart = () => {
+    setCartItems(savedCartItems);
+    setSavedCartItems([]);
+    showSuccess('Cart Restored', 'Your saved cart has been restored');
+  };
+
+  const saveCartToDb = async () => {
+    try {
+      await AsyncStorage.setItem('savedCart', JSON.stringify(cartItems));
+      setSavedCartItems(cartItems);
+      showSuccess('Cart Saved', 'Your cart has been saved');
+    } catch (e) {
+      console.error('Error saving cart:', e);
+    }
+  };
 
   if (cartItems.length === 0) {
     return (
@@ -48,6 +86,14 @@ const CartScreen = ({ navigation }) => {
           >
             <Text style={styles.shopBtnText}>{t('cart.startShopping')}</Text>
           </TouchableOpacity>
+          {savedCartItems.length > 0 && (
+            <TouchableOpacity
+              style={[styles.shopBtn, { marginTop: 16, backgroundColor: COLORS.gold }]}
+              onPress={restoreSavedCart}
+            >
+              <Text style={styles.shopBtnText}>Restore Saved Cart ({savedCartItems.length} items)</Text>
+            </TouchableOpacity>
+          )}
         </View>
       </View>
     );
@@ -117,6 +163,13 @@ const CartScreen = ({ navigation }) => {
             <Ionicons name="pricetag-outline" size={20} color={COLORS.gold} />
             <Text style={styles.promoText}>Add Promo Code</Text>
             <Ionicons name="chevron-forward" size={20} color={COLORS.gray} />
+          </TouchableOpacity>
+        </View>
+
+        <View style={styles.promoSection}>
+          <TouchableOpacity style={styles.promoBtn} onPress={saveCartToDb}>
+            <Ionicons name="pricetag-outline" size={20} color={COLORS.gold} />
+            <Text style={styles.promoText}>Remember the cart</Text>
           </TouchableOpacity>
         </View>
 

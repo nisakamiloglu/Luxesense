@@ -370,6 +370,7 @@ export const AppProvider = ({ children }) => {
 
       // Cart
       cartItems,
+      setCartItems,
       addToCart,
       removeFromCart,
       updateCartQuantity,
