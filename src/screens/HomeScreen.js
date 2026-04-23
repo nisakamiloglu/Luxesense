@@ -28,12 +28,18 @@ const BANNERS = [
 
 const FILTER_TABS = [
   { id: 'all', label: 'Trending' },
-  { id: 'clothing', label: 'Clothing' },
+  { id: 'men', label: 'Men' },
+  { id: 'women', label: 'Women' },
+  { id: 'tops', label: 'Tops' },
+  { id: 'bottoms', label: 'Bottoms' },
+  { id: 'jackets', label: 'Jackets' },
   { id: 'bags', label: 'Bags' },
   { id: 'shoes', label: 'Shoes' },
   { id: 'jewelry', label: 'Jewelry' },
   { id: 'watches', label: 'Watches' },
 ];
+
+const CLOTHING_TABS = ['men', 'women', 'tops', 'bottoms', 'jackets', 'clothing'];
 
 const HomeScreen = ({ navigation }) => {
   const { user, getCartCount, toggleWishlist, isInWishlist, products } = useApp();
@@ -45,14 +51,16 @@ const HomeScreen = ({ navigation }) => {
   const bannerRef = useRef(null);
   useScrollToTop(listRef);
 
+  const catFilter = CLOTHING_TABS.includes(activeTab) ? 'clothing' : activeTab;
+
   const filtered = products.filter((p) => {
-    const matchCat = activeTab === 'all' || p.category === activeTab;
+    const matchCat = catFilter === 'all' || p.category === catFilter;
     const matchSearch = !search || p.name.toLowerCase().includes(search.toLowerCase()) || p.brand.toLowerCase().includes(search.toLowerCase());
     return matchCat && matchSearch;
   });
 
   const onBannerScroll = (e) => {
-    setActiveBanner(Math.round(e.nativeEvent.contentOffset.x / (width - 40)));
+    setActiveBanner(Math.round(e.nativeEvent.contentOffset.x / width));
   };
 
   const renderProduct = ({ item, index }) => (
@@ -142,11 +150,10 @@ const HomeScreen = ({ navigation }) => {
               <ScrollView
                 ref={bannerRef}
                 horizontal
+                pagingEnabled
                 showsHorizontalScrollIndicator={false}
                 onScroll={onBannerScroll}
                 scrollEventThrottle={16}
-                snapToInterval={width - 40}
-                snapToAlignment="start"
                 decelerationRate="fast"
               >
                 {BANNERS.map((b) => (
@@ -288,12 +295,9 @@ const styles = StyleSheet.create({
   // Banner
   bannerWrap: { marginBottom: 20, marginHorizontal: -SIZES.padding },
   banner: {
-    width: width - 40,
+    width: width,
     height: 240,
-    borderRadius: 16,
     overflow: 'hidden',
-    marginLeft: SIZES.padding,
-    marginRight: 12,
   },
   bannerImg: { width: '100%', height: '100%' },
   bannerOverlay: {
