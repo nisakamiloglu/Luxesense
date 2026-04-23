@@ -12,7 +12,13 @@ import { Ionicons } from '@expo/vector-icons';
 import { COLORS, SIZES, SHADOWS } from '../constants/theme';
 
 const OrderSuccessScreen = ({ route, navigation }) => {
-  const { order } = route.params;
+  const order = route?.params?.order || {
+    orderNumber: 'N/A',
+    trackingNumber: 'N/A',
+    items: [],
+    total: 0,
+    shipping: { method: 'standard' },
+  };
 
   const scaleAnim = useRef(new Animated.Value(0)).current;
   const fadeAnim = useRef(new Animated.Value(0)).current;

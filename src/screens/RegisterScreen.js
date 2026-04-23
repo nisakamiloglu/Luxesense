@@ -17,6 +17,26 @@ import { useApp } from '../context/AppContext';
 import { useToast } from '../context/ToastContext';
 import { registerUser } from '../services/api';
 
+const Field = ({ label, field, placeholder, secure, keyboard, caps, extra, value, onChange, showPw }) => (
+  <View style={styles.field}>
+    <Text style={styles.label}>{label}</Text>
+    <View style={styles.pwRow}>
+      <TextInput
+        style={[styles.input, { flex: 1 }]}
+        value={value}
+        onChangeText={onChange}
+        placeholder={placeholder}
+        placeholderTextColor="#C0B8B0"
+        secureTextEntry={secure && !showPw}
+        keyboardType={keyboard || 'default'}
+        autoCapitalize={caps || 'none'}
+      />
+      {extra}
+    </View>
+    <View style={styles.inputLine} />
+  </View>
+);
+
 const RegisterScreen = ({ navigation }) => {
   const { login } = useApp();
   const { showSuccess, showError, showWarning } = useToast();
@@ -68,7 +88,13 @@ const RegisterScreen = ({ navigation }) => {
       if (response.success) {
         showSuccess('Welcome!', `Account created, ${formData.fullName}!`);
         login(userType, response.user, response.token, true);
-        setTimeout(() => navigation.replace(userType === 'customer' ? 'MainTabs' : 'AdvisorTabs'), 1200);
+        setTimeout(() => {
+          if (userType === 'customer') {
+            navigation.replace('StyleQuiz');
+          } else {
+            navigation.replace('AdvisorTabs');
+          }
+        }, 1200);
       } else {
         showError('Failed', response.message || 'Please try again');
       }
@@ -78,26 +104,6 @@ const RegisterScreen = ({ navigation }) => {
       setLoading(false);
     }
   };
-
-  const Field = ({ label, field, placeholder, secure, keyboard, caps, extra }) => (
-    <View style={styles.field}>
-      <Text style={styles.label}>{label}</Text>
-      <View style={styles.pwRow}>
-        <TextInput
-          style={[styles.input, { flex: 1 }]}
-          value={formData[field]}
-          onChangeText={(v) => update(field, v)}
-          placeholder={placeholder}
-          placeholderTextColor="#C0B8B0"
-          secureTextEntry={secure && !showPassword}
-          keyboardType={keyboard || 'default'}
-          autoCapitalize={caps || 'none'}
-        />
-        {extra}
-      </View>
-      <View style={styles.inputLine} />
-    </View>
-  );
 
   return (
     <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
@@ -124,29 +130,31 @@ const RegisterScreen = ({ navigation }) => {
             ))}
           </View>
 
-          <Field label="Your Name" field="fullName" placeholder="Enter your full name" caps="words" />
-          <Field label="Email" field="email" placeholder="username@email.com" keyboard="email-address" />
+          <Field label="Your Name" value={formData.fullName} onChange={v => update('fullName', v)} placeholder="Enter your full name" caps="words" />
+          <Field label="Email" value={formData.email} onChange={v => update('email', v)} placeholder="username@email.com" keyboard="email-address" />
           {userType === 'customer' && (
-            <Field label="Phone (Optional)" field="phone" placeholder="+1 000 000 0000" keyboard="phone-pad" />
+            <Field label="Phone (Optional)" value={formData.phone} onChange={v => update('phone', v)} placeholder="+1 000 000 0000" keyboard="phone-pad" />
           )}
           {userType === 'advisor' && (
             <>
-              <Field label="Employee ID" field="employeeId" placeholder="EMP-12345" caps="characters" />
-              <Field label="Store Location" field="storeLocation" placeholder="Store name or city" />
+              <Field label="Employee ID" value={formData.employeeId} onChange={v => update('employeeId', v)} placeholder="EMP-12345" caps="characters" />
+              <Field label="Store Location" value={formData.storeLocation} onChange={v => update('storeLocation', v)} placeholder="Store name or city" />
             </>
           )}
           <Field
             label="Password"
-            field="password"
+            value={formData.password}
+            onChange={v => update('password', v)}
             placeholder="Create a password"
             secure
+            showPw={showPassword}
             extra={
               <TouchableOpacity onPress={() => setShowPassword(!showPassword)} style={styles.eyeBtn}>
                 <Ionicons name={showPassword ? 'eye-off-outline' : 'eye-outline'} size={20} color="#AAA" />
               </TouchableOpacity>
             }
           />
-          <Field label="Confirm Password" field="confirmPassword" placeholder="Repeat your password" secure />
+          <Field label="Confirm Password" value={formData.confirmPassword} onChange={v => update('confirmPassword', v)} placeholder="Repeat your password" secure showPw={showPassword} />
 
           <Text style={styles.terms}>
             By creating an account, you agree to our <Text style={styles.termsLink}>Terms</Text> and <Text style={styles.termsLink}>Privacy Policy</Text>

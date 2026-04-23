@@ -46,7 +46,7 @@ const SettingsScreen = ({ navigation }) => {
     }
 
     try {
-      const response = await fetch('http://10.34.40.171:5001/api/auth/change-password', {
+      const response = await fetch('https://luxesense-backend-production.up.railway.app/api/auth/change-password', {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -80,7 +80,7 @@ const SettingsScreen = ({ navigation }) => {
     }
 
     try {
-      const response = await fetch('http://10.34.40.171:5001/api/auth/update-profile', {
+      const response = await fetch('https://luxesense-backend-production.up.railway.app/api/auth/update-profile', {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -140,25 +140,25 @@ const SettingsScreen = ({ navigation }) => {
       icon: 'notifications-outline',
       label: 'Notifications',
       desc: 'Manage push notifications',
-      onPress: () => showInfo('Coming Soon', 'This feature will be available soon'),
+      onPress: () => {},
     },
     {
       icon: 'shield-outline',
       label: 'Privacy',
       desc: 'Privacy and data settings',
-      onPress: () => showInfo('Coming Soon', 'This feature will be available soon'),
+      onPress: () => {},
     },
     {
       icon: 'help-circle-outline',
       label: 'Help & Support',
       desc: 'FAQ and contact support',
-      onPress: () => showInfo('Coming Soon', 'This feature will be available soon'),
+      onPress: () => {},
     },
     {
       icon: 'document-text-outline',
       label: 'Terms & Conditions',
       desc: 'Read our terms of service',
-      onPress: () => showInfo('Coming Soon', 'This feature will be available soon'),
+      onPress: () => {},
     },
     {
       icon: 'trash-outline',

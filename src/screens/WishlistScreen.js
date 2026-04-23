@@ -12,13 +12,12 @@ import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import { useScrollToTop } from '@react-navigation/native';
 import { useApp } from '../context/AppContext';
-import { products } from '../constants/mockData';
 
 const { width } = Dimensions.get('window');
 const CARD_W = (width - 20 * 2 - 12) / 2;
 
 const WishlistScreen = ({ navigation }) => {
-  const { wishlist, toggleWishlist, getCartCount } = useApp();
+  const { wishlist, toggleWishlist, getCartCount, products } = useApp();
   const { t } = useTranslation();
   const listRef = useRef(null);
   useScrollToTop(listRef);
@@ -131,9 +130,10 @@ const styles = StyleSheet.create({
     paddingBottom: 16,
   },
   headerTitle: {
-    fontSize: 28,
-    fontWeight: '700',
+    fontSize: 34,
+    fontWeight: '800',
     color: '#1A1A1A',
+    letterSpacing: -0.5,
   },
   headerRight: {
     flexDirection: 'row',

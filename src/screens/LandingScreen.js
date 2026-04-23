@@ -7,7 +7,6 @@ import {
   Animated,
   Dimensions,
   ImageBackground,
-  ScrollView,
   Image,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
@@ -248,7 +247,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#1A1A1A',
     width: 20,
   },
-  // Grid screen
   gridScreen: {
     flex: 1,
     backgroundColor: '#fff',
@@ -303,7 +301,6 @@ const styles = StyleSheet.create({
     color: '#1A1A1A',
     fontWeight: '600',
   },
-  // Onboard with photo
   onboardContent: {
     flex: 1,
     justifyContent: 'flex-end',

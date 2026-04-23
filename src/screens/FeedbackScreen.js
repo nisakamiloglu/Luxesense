@@ -9,10 +9,12 @@ import {
   Alert,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useTranslation } from 'react-i18next';
 import { COLORS, SIZES, SHADOWS } from '../constants/theme';
 
 const FeedbackScreen = ({ route, navigation }) => {
-  const { order } = route.params;
+  const { t } = useTranslation();
+  const order = route?.params?.order || { orderNumber: 'N/A' };
   const [ratings, setRatings] = useState({
     overall: 0,
     quality: 0,
@@ -23,12 +25,12 @@ const FeedbackScreen = ({ route, navigation }) => {
   const [selectedTags, setSelectedTags] = useState([]);
 
   const feedbackTags = [
-    'Fast Delivery',
-    'Great Quality',
-    'Excellent Service',
-    'Beautiful Packaging',
-    'As Described',
-    'Will Buy Again',
+    t('feedback.fastDelivery'),
+    t('feedback.greatQuality'),
+    t('feedback.excellentService'),
+    t('feedback.beautifulPackaging'),
+    t('feedback.asDescribed'),
+    t('feedback.willBuyAgain'),
   ];
 
   const toggleTag = (tag) => {
@@ -58,15 +60,15 @@ const FeedbackScreen = ({ route, navigation }) => {
 
   const handleSubmit = () => {
     if (ratings.overall === 0) {
-      Alert.alert('Rating Required', 'Please provide an overall rating');
+      Alert.alert(t('feedback.ratingRequired'), t('feedback.pleaseProvideRating'));
       return;
     }
     Alert.alert(
-      'Thank You!',
-      'Your feedback has been submitted successfully.',
+      t('feedback.thankYou'),
+      t('feedback.feedbackSubmitted'),
       [
         {
-          text: 'Continue Shopping',
+          text: t('feedback.continueShopping'),
           onPress: () => navigation.navigate('MainTabs'),
         },
       ]
@@ -82,16 +84,16 @@ const FeedbackScreen = ({ route, navigation }) => {
       {/* Header */}
       <View style={styles.header}>
         <View style={{ width: 44 }} />
-        <Text style={styles.headerTitle}>Rate Your Experience</Text>
+        <Text style={styles.headerTitle}>{t('feedback.title')}</Text>
         <TouchableOpacity onPress={handleSkip}>
-          <Text style={styles.skipBtn}>Skip</Text>
+          <Text style={styles.skipBtn}>{t('feedback.skip')}</Text>
         </TouchableOpacity>
       </View>
 
       <ScrollView showsVerticalScrollIndicator={false}>
         {/* Overall Rating */}
         <View style={styles.ratingSection}>
-          <Text style={styles.ratingTitle}>How was your overall experience?</Text>
+          <Text style={styles.ratingTitle}>{t('feedback.overallExperience')}</Text>
           <View style={styles.mainStars}>
             {[1, 2, 3, 4, 5].map((star) => (
               <TouchableOpacity
@@ -107,38 +109,38 @@ const FeedbackScreen = ({ route, navigation }) => {
             ))}
           </View>
           <Text style={styles.ratingLabel}>
-            {ratings.overall === 0 && 'Tap to rate'}
-            {ratings.overall === 1 && 'Poor'}
-            {ratings.overall === 2 && 'Fair'}
-            {ratings.overall === 3 && 'Good'}
-            {ratings.overall === 4 && 'Very Good'}
-            {ratings.overall === 5 && 'Excellent'}
+            {ratings.overall === 0 && t('feedback.tapToRate')}
+            {ratings.overall === 1 && t('feedback.poor')}
+            {ratings.overall === 2 && t('feedback.fair')}
+            {ratings.overall === 3 && t('feedback.good')}
+            {ratings.overall === 4 && t('feedback.veryGood')}
+            {ratings.overall === 5 && t('feedback.excellent')}
           </Text>
         </View>
 
         {/* Detailed Ratings */}
         <View style={styles.detailedSection}>
-          <Text style={styles.sectionTitle}>Rate specific aspects</Text>
+          <Text style={styles.sectionTitle}>{t('feedback.rateAspects')}</Text>
 
           <View style={styles.ratingRow}>
-            <Text style={styles.ratingCategory}>Product Quality</Text>
+            <Text style={styles.ratingCategory}>{t('feedback.productQuality')}</Text>
             {renderStars('quality', ratings.quality)}
           </View>
 
           <View style={styles.ratingRow}>
-            <Text style={styles.ratingCategory}>Customer Service</Text>
+            <Text style={styles.ratingCategory}>{t('feedback.customerService')}</Text>
             {renderStars('service', ratings.service)}
           </View>
 
           <View style={styles.ratingRow}>
-            <Text style={styles.ratingCategory}>Delivery Experience</Text>
+            <Text style={styles.ratingCategory}>{t('feedback.deliveryExperience')}</Text>
             {renderStars('delivery', ratings.delivery)}
           </View>
         </View>
 
         {/* Quick Tags */}
         <View style={styles.tagsSection}>
-          <Text style={styles.sectionTitle}>What did you love?</Text>
+          <Text style={styles.sectionTitle}>{t('feedback.whatDidYouLove')}</Text>
           <View style={styles.tagsContainer}>
             {feedbackTags.map((tag) => (
               <TouchableOpacity
@@ -167,11 +169,11 @@ const FeedbackScreen = ({ route, navigation }) => {
 
         {/* Written Review */}
         <View style={styles.reviewSection}>
-          <Text style={styles.sectionTitle}>Write a review (optional)</Text>
+          <Text style={styles.sectionTitle}>{t('feedback.writeReview')}</Text>
           <View style={styles.reviewInput}>
             <TextInput
               style={styles.textArea}
-              placeholder="Share your experience with this order..."
+              placeholder={t('feedback.placeholder')}
               placeholderTextColor={COLORS.gray}
               multiline
               numberOfLines={4}
@@ -188,7 +190,7 @@ const FeedbackScreen = ({ route, navigation }) => {
       {/* Submit Button */}
       <View style={styles.bottomBar}>
         <TouchableOpacity style={styles.submitBtn} onPress={handleSubmit}>
-          <Text style={styles.submitBtnText}>Submit Feedback</Text>
+          <Text style={styles.submitBtnText}>{t('feedback.submit')}</Text>
           <Ionicons name="send" size={18} color={COLORS.white} />
         </TouchableOpacity>
       </View>

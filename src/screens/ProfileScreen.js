@@ -235,10 +235,10 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
   },
   headerTitle: {
-    fontSize: 24,
-    fontWeight: '700',
+    fontSize: 34,
+    fontWeight: '800',
     color: '#1A1A1A',
-    letterSpacing: 0.3,
+    letterSpacing: -0.5,
   },
   cartBtn: {
     width: 40,

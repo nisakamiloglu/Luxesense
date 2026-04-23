@@ -1,216 +1,157 @@
 import React from 'react';
 import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  TouchableOpacity,
-  Dimensions,
+  View, Text, StyleSheet, ScrollView, TouchableOpacity,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { COLORS, SIZES, SHADOWS } from '../constants/theme';
 import { useApp } from '../context/AppContext';
 
-const { width } = Dimensions.get('window');
+const ENG_DOT = { High: COLORS.gold, Mid: '#8B7355', Low: '#C0C0C0' };
+
+const ScoreBadge = ({ score }) => {
+  const s = score ?? 0;
+  const color = s >= 8 ? COLORS.gold : s >= 5 ? '#8B7355' : '#C0C0C0';
+  return (
+    <View style={[styles.scoreBadge, { borderColor: color }]}>
+      <Text style={[styles.scoreNum, { color }]}>{s.toFixed(1)}</Text>
+    </View>
+  );
+};
 
 const AdvisorDashboardScreen = ({ navigation }) => {
   const { advisor, assignedCustomers, getGreeting, logout } = useApp();
 
-  const progressPercentage = (advisor.currentSales / advisor.monthlyTarget) * 100;
+  const progress = Math.min((advisor.currentSales / advisor.monthlyTarget) * 100, 100);
 
-  const recentActivities = [
-    { id: 1, type: 'sale', customer: 'Alexandra Chen', amount: 8500, item: 'Diamond Pendant', time: '2 hours ago' },
-    { id: 2, type: 'appointment', customer: 'Victoria Sterling', time: '3 hours ago', note: 'Watch collection viewing' },
-    { id: 3, type: 'sale', customer: 'Sophia Laurent', amount: 12800, item: 'Emerald Earrings', time: '5 hours ago' },
-    { id: 4, type: 'followup', customer: 'Emma Rothschild', time: 'Yesterday', note: 'Birthday gift suggestions' },
-  ];
+  const topClients = [...assignedCustomers]
+    .sort((a, b) => (b.cviScore ?? 0) - (a.cviScore ?? 0))
+    .slice(0, 3);
 
-  const upcomingAppointments = [
-    { id: 1, customer: 'Charlotte Windsor', time: 'Today, 3:00 PM', type: 'Consultation' },
-    { id: 2, customer: 'Victoria Sterling', time: 'Tomorrow, 11:00 AM', type: 'Watch Viewing' },
-    { id: 3, customer: 'Alexandra Chen', time: 'Mar 5, 2:00 PM', type: 'Private Shopping' },
+  const urgentCount = assignedCustomers
+    .flatMap(c => c.alerts || [])
+    .filter(a => a.urgency === 'high').length;
+
+  const appointments = [
+    { id: 1, customer: 'Charlotte Windsor', time: 'Today, 3:00 PM',     type: 'Consultation'     },
+    { id: 2, customer: 'Victoria Sterling', time: 'Tomorrow, 11:00 AM', type: 'Watch Viewing'    },
+    { id: 3, customer: 'Alexandra Chen',    time: 'Mar 5, 2:00 PM',     type: 'Private Shopping' },
   ];
 
   return (
     <View style={styles.container}>
-      {/* Header */}
       <View style={styles.header}>
         <View>
           <Text style={styles.greeting}>{getGreeting()},</Text>
-          <Text style={styles.advisorName}>{advisor.name}</Text>
+          <Text style={styles.name}>{advisor.name}</Text>
         </View>
         <View style={styles.headerRight}>
-          <TouchableOpacity style={styles.iconBtn}>
-            <Ionicons name="notifications-outline" size={24} color={COLORS.black} />
-            <View style={styles.notifBadge} />
+          <TouchableOpacity style={styles.iconBtn} onPress={() => navigation.navigate('Activity')}>
+            <Ionicons name="flash-outline" size={22} color={COLORS.black} />
+            {urgentCount > 0 && (
+              <View style={styles.badge}>
+                <Text style={styles.badgeText}>{urgentCount}</Text>
+              </View>
+            )}
           </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.iconBtn}
-            onPress={() => {
-              logout();
-              navigation.replace('Landing');
-            }}
-          >
-            <Ionicons name="log-out-outline" size={24} color={COLORS.black} />
+          <TouchableOpacity style={styles.iconBtn} onPress={() => { logout(); navigation.replace('Landing'); }}>
+            <Ionicons name="log-out-outline" size={22} color={COLORS.black} />
           </TouchableOpacity>
         </View>
       </View>
 
       <ScrollView showsVerticalScrollIndicator={false}>
-        {/* Sales Target Card */}
+
+        {/* Sales Target */}
         <View style={styles.targetCard}>
-          <View style={styles.targetHeader}>
-            <Text style={styles.targetTitle}>Monthly Sales Target</Text>
-            <View style={styles.rankBadge}>
-              <Ionicons name="trophy" size={14} color={COLORS.gold} />
+          <View style={styles.targetTop}>
+            <Text style={styles.targetLabel}>Monthly Target</Text>
+            <View style={styles.rankChip}>
+              <Ionicons name="trophy" size={12} color={COLORS.gold} />
               <Text style={styles.rankText}>#{advisor.ranking} of {advisor.totalAdvisors}</Text>
             </View>
           </View>
-
-          <View style={styles.targetProgress}>
-            <View style={styles.targetNumbers}>
-              <Text style={styles.currentSales}>${advisor.currentSales.toLocaleString()}</Text>
-              <Text style={styles.targetAmount}>of ${advisor.monthlyTarget.toLocaleString()}</Text>
-            </View>
-            <View style={styles.progressBar}>
-              <View style={[styles.progressFill, { width: `${Math.min(progressPercentage, 100)}%` }]} />
-            </View>
-            <Text style={styles.progressText}>{progressPercentage.toFixed(0)}% achieved</Text>
+          <View style={styles.targetNums}>
+            <Text style={styles.currentSales}>${advisor.currentSales.toLocaleString()}</Text>
+            <Text style={styles.targetAmount}>/ ${advisor.monthlyTarget.toLocaleString()}</Text>
           </View>
-
-          <View style={styles.targetRemaining}>
-            <Text style={styles.remainingLabel}>Remaining to target</Text>
-            <Text style={styles.remainingAmount}>
-              ${(advisor.monthlyTarget - advisor.currentSales).toLocaleString()}
+          <View style={styles.progressBar}>
+            <View style={[styles.progressFill, { width: `${progress}%` }]} />
+          </View>
+          <View style={styles.targetBottom}>
+            <Text style={styles.progressPct}>{progress.toFixed(0)}% achieved</Text>
+            <Text style={styles.remaining}>
+              ${(advisor.monthlyTarget - advisor.currentSales).toLocaleString()} remaining
             </Text>
           </View>
         </View>
 
         {/* Quick Stats */}
         <View style={styles.statsRow}>
-          <View style={styles.statCard}>
-            <View style={[styles.statIcon, { backgroundColor: '#E3F2FD' }]}>
-              <Ionicons name="people" size={20} color="#1976D2" />
+          {[
+            { icon: 'people',      value: advisor.clientsServed,                       label: 'Clients'    },
+            { icon: 'cash',        value: `$${advisor.averageTicket.toLocaleString()}`, label: 'Avg Ticket' },
+            { icon: 'trending-up', value: `${advisor.conversionRate}%`,                label: 'Conversion' },
+          ].map(s => (
+            <View key={s.label} style={styles.statCard}>
+              <Ionicons name={s.icon} size={16} color={COLORS.gold} style={{ marginBottom: 6 }} />
+              <Text style={styles.statValue}>{s.value}</Text>
+              <Text style={styles.statLabel}>{s.label}</Text>
             </View>
-            <Text style={styles.statValue}>{advisor.clientsServed}</Text>
-            <Text style={styles.statLabel}>Clients Served</Text>
-          </View>
-          <View style={styles.statCard}>
-            <View style={[styles.statIcon, { backgroundColor: '#E8F5E9' }]}>
-              <Ionicons name="cash" size={20} color="#388E3C" />
-            </View>
-            <Text style={styles.statValue}>${advisor.averageTicket.toLocaleString()}</Text>
-            <Text style={styles.statLabel}>Avg. Ticket</Text>
-          </View>
-          <View style={styles.statCard}>
-            <View style={[styles.statIcon, { backgroundColor: '#FFF3E0' }]}>
-              <Ionicons name="trending-up" size={20} color="#F57C00" />
-            </View>
-            <Text style={styles.statValue}>{advisor.conversionRate}%</Text>
-            <Text style={styles.statLabel}>Conversion</Text>
-          </View>
+          ))}
         </View>
 
-        {/* Commission Card */}
-        <View style={styles.commissionCard}>
-          <View style={styles.commissionIcon}>
-            <Ionicons name="wallet" size={24} color={COLORS.gold} />
+        {/* Top Clients */}
+        <View style={styles.section}>
+          <View style={styles.sectionRow}>
+            <Text style={styles.sectionTitle}>Top Clients</Text>
+            <TouchableOpacity onPress={() => navigation.navigate('Clients')}>
+              <Text style={styles.seeAll}>See All</Text>
+            </TouchableOpacity>
           </View>
-          <View style={styles.commissionInfo}>
-            <Text style={styles.commissionLabel}>Estimated Commission</Text>
-            <Text style={styles.commissionAmount}>${advisor.commission.toLocaleString()}</Text>
-          </View>
-          <TouchableOpacity>
-            <Ionicons name="chevron-forward" size={20} color={COLORS.gray} />
-          </TouchableOpacity>
+          {topClients.map(c => {
+            const engColor = ENG_DOT[c.engagementLevel] || '#C0C0C0';
+            return (
+              <TouchableOpacity
+                key={c.id}
+                style={styles.clientRow}
+                onPress={() => navigation.navigate('CustomerDetail', { customer: c })}
+              >
+                <View style={styles.clientAvatarWrap}>
+                  <View style={styles.clientAvatar}>
+                    <Text style={styles.clientAvatarText}>{c.avatar}</Text>
+                  </View>
+                  <View style={[styles.clientEngDot, { backgroundColor: engColor }]} />
+                </View>
+                <View style={styles.clientInfo}>
+                  <Text style={styles.clientName}>{c.name}</Text>
+                  <Text style={styles.clientSub}>
+                    {c.engagementLevel} · {c.purchaseFrequency} · {c.lastSeen}
+                  </Text>
+                </View>
+                <ScoreBadge score={c.cviScore} />
+              </TouchableOpacity>
+            );
+          })}
         </View>
 
         {/* Upcoming Appointments */}
         <View style={styles.section}>
-          <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Upcoming Appointments</Text>
-            <TouchableOpacity>
+          <View style={styles.sectionRow}>
+            <Text style={styles.sectionTitle}>Upcoming</Text>
+            <TouchableOpacity onPress={() => navigation.navigate('Activity')}>
               <Text style={styles.seeAll}>See All</Text>
             </TouchableOpacity>
           </View>
-          {upcomingAppointments.map((apt) => (
-            <TouchableOpacity key={apt.id} style={styles.appointmentCard}>
-              <View style={styles.appointmentTime}>
-                <Ionicons name="calendar-outline" size={18} color={COLORS.gold} />
-                <Text style={styles.appointmentTimeText}>{apt.time}</Text>
+          {appointments.map(apt => (
+            <View key={apt.id} style={styles.aptCard}>
+              <View style={styles.aptLeft}>
+                <Ionicons name="calendar-outline" size={14} color={COLORS.gold} />
+                <Text style={styles.aptTime}>{apt.time}</Text>
               </View>
-              <Text style={styles.appointmentCustomer}>{apt.customer}</Text>
-              <View style={styles.appointmentType}>
-                <Text style={styles.appointmentTypeText}>{apt.type}</Text>
+              <View style={styles.aptRight}>
+                <Text style={styles.aptCustomer}>{apt.customer}</Text>
+                <Text style={styles.aptType}>{apt.type}</Text>
               </View>
-            </TouchableOpacity>
-          ))}
-        </View>
-
-        {/* My Clients Quick Access */}
-        <View style={styles.section}>
-          <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>My Clients</Text>
-            <TouchableOpacity onPress={() => navigation.navigate('Customers')}>
-              <Text style={styles.seeAll}>See All</Text>
-            </TouchableOpacity>
-          </View>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-            {assignedCustomers.slice(0, 4).map((customer) => (
-              <TouchableOpacity
-                key={customer.id}
-                style={styles.clientCard}
-                onPress={() => navigation.navigate('CustomerDetail', { customer })}
-              >
-                <View style={styles.clientAvatar}>
-                  <Text style={styles.clientAvatarText}>{customer.avatar}</Text>
-                </View>
-                <Text style={styles.clientName} numberOfLines={1}>{customer.name.split(' ')[0]}</Text>
-                <View style={[
-                  styles.tierBadge,
-                  customer.tier === 'Platinum' && styles.tierPlatinum,
-                  customer.tier === 'Gold' && styles.tierGold,
-                ]}>
-                  <Text style={styles.tierText}>{customer.tier}</Text>
-                </View>
-              </TouchableOpacity>
-            ))}
-          </ScrollView>
-        </View>
-
-        {/* Recent Activity */}
-        <View style={styles.section}>
-          <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Recent Activity</Text>
-          </View>
-          {recentActivities.map((activity) => (
-            <View key={activity.id} style={styles.activityItem}>
-              <View style={[
-                styles.activityIcon,
-                activity.type === 'sale' && styles.activitySale,
-                activity.type === 'appointment' && styles.activityAppointment,
-                activity.type === 'followup' && styles.activityFollowup,
-              ]}>
-                <Ionicons
-                  name={
-                    activity.type === 'sale' ? 'bag-check' :
-                    activity.type === 'appointment' ? 'calendar' : 'chatbubble'
-                  }
-                  size={16}
-                  color={COLORS.white}
-                />
-              </View>
-              <View style={styles.activityInfo}>
-                <Text style={styles.activityCustomer}>{activity.customer}</Text>
-                {activity.type === 'sale' ? (
-                  <Text style={styles.activityDetail}>
-                    Purchased {activity.item} - ${activity.amount.toLocaleString()}
-                  </Text>
-                ) : (
-                  <Text style={styles.activityDetail}>{activity.note}</Text>
-                )}
-              </View>
-              <Text style={styles.activityTime}>{activity.time}</Text>
             </View>
           ))}
         </View>
@@ -222,340 +163,107 @@ const AdvisorDashboardScreen = ({ navigation }) => {
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: COLORS.cream,
-  },
+  container: { flex: 1, backgroundColor: COLORS.cream },
+
   header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: SIZES.padding,
-    paddingTop: 60,
-    paddingBottom: 20,
+    flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
+    paddingHorizontal: SIZES.padding, paddingTop: 60, paddingBottom: 20,
   },
-  greeting: {
-    fontSize: 14,
-    color: COLORS.gray,
-  },
-  advisorName: {
-    fontSize: 26,
-    fontWeight: '500',
-    color: COLORS.black,
-    marginTop: 4,
-  },
-  headerRight: {
-    flexDirection: 'row',
-    gap: 12,
-  },
+  greeting: { fontSize: 13, color: COLORS.gray },
+  name: { fontSize: 26, fontWeight: '500', color: COLORS.black, marginTop: 2 },
+  headerRight: { flexDirection: 'row', gap: 10 },
   iconBtn: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: COLORS.white,
-    justifyContent: 'center',
-    alignItems: 'center',
+    width: 42, height: 42, borderRadius: 21,
+    backgroundColor: COLORS.white, justifyContent: 'center', alignItems: 'center',
     ...SHADOWS.light,
   },
-  notifBadge: {
-    position: 'absolute',
-    top: 10,
-    right: 10,
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: COLORS.error,
+  badge: {
+    position: 'absolute', top: -2, right: -2,
+    minWidth: 17, height: 17, borderRadius: 9,
+    backgroundColor: COLORS.gold, justifyContent: 'center', alignItems: 'center',
+    paddingHorizontal: 3,
   },
+  badgeText: { fontSize: 9, fontWeight: '800', color: COLORS.white },
+
   targetCard: {
-    margin: SIZES.padding,
-    padding: 20,
-    backgroundColor: COLORS.black,
-    borderRadius: SIZES.radius,
+    marginHorizontal: SIZES.padding, marginBottom: 14,
+    padding: 20, backgroundColor: COLORS.black, borderRadius: SIZES.radius,
     ...SHADOWS.medium,
   },
-  targetHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 20,
+  targetTop: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 },
+  targetLabel: { fontSize: 12, color: '#999', letterSpacing: 0.5 },
+  rankChip: {
+    flexDirection: 'row', alignItems: 'center', gap: 5,
+    backgroundColor: 'rgba(201,169,98,0.18)', paddingHorizontal: 9, paddingVertical: 4, borderRadius: 10,
   },
-  targetTitle: {
-    fontSize: 14,
-    color: COLORS.lightGray,
-    letterSpacing: 0.5,
-  },
-  rankBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: 'rgba(201, 169, 98, 0.2)',
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 12,
-    gap: 6,
-  },
-  rankText: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: COLORS.gold,
-  },
-  targetProgress: {
-    marginBottom: 20,
-  },
-  targetNumbers: {
-    flexDirection: 'row',
-    alignItems: 'baseline',
-    marginBottom: 12,
-  },
-  currentSales: {
-    fontSize: 32,
-    fontWeight: '600',
-    color: COLORS.white,
-  },
-  targetAmount: {
-    fontSize: 16,
-    color: COLORS.gray,
-    marginLeft: 8,
-  },
+  rankText: { fontSize: 11, fontWeight: '600', color: COLORS.gold },
+  targetNums: { flexDirection: 'row', alignItems: 'baseline', marginBottom: 12 },
+  currentSales: { fontSize: 30, fontWeight: '600', color: COLORS.white },
+  targetAmount: { fontSize: 14, color: '#666', marginLeft: 8 },
   progressBar: {
-    height: 8,
-    backgroundColor: 'rgba(255,255,255,0.2)',
-    borderRadius: 4,
-    marginBottom: 8,
+    height: 5, backgroundColor: 'rgba(255,255,255,0.12)',
+    borderRadius: 3, marginBottom: 10, overflow: 'hidden',
   },
-  progressFill: {
-    height: '100%',
-    backgroundColor: COLORS.gold,
-    borderRadius: 4,
-  },
-  progressText: {
-    fontSize: 13,
-    color: COLORS.gold,
-  },
-  targetRemaining: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingTop: 16,
-    borderTopWidth: 1,
-    borderTopColor: 'rgba(255,255,255,0.1)',
-  },
-  remainingLabel: {
-    fontSize: 13,
-    color: COLORS.gray,
-  },
-  remainingAmount: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: COLORS.white,
-  },
+  progressFill: { height: '100%', backgroundColor: COLORS.gold, borderRadius: 3 },
+  targetBottom: { flexDirection: 'row', justifyContent: 'space-between' },
+  progressPct: { fontSize: 11, color: COLORS.gold },
+  remaining: { fontSize: 11, color: '#666' },
+
   statsRow: {
-    flexDirection: 'row',
-    paddingHorizontal: SIZES.padding,
-    gap: 12,
-    marginBottom: 16,
+    flexDirection: 'row', paddingHorizontal: SIZES.padding, gap: 10, marginBottom: 20,
   },
   statCard: {
-    flex: 1,
-    padding: 16,
-    backgroundColor: COLORS.white,
-    borderRadius: SIZES.radius,
-    alignItems: 'center',
-    ...SHADOWS.light,
+    flex: 1, padding: 14, backgroundColor: COLORS.white,
+    borderRadius: SIZES.radius, alignItems: 'center', ...SHADOWS.light,
   },
-  statIcon: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 10,
+  statValue: { fontSize: 15, fontWeight: '600', color: COLORS.black },
+  statLabel: { fontSize: 10, color: COLORS.gray, marginTop: 2 },
+
+  section: { marginBottom: 20 },
+  sectionRow: {
+    flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
+    paddingHorizontal: SIZES.padding, marginBottom: 10,
   },
-  statValue: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: COLORS.black,
+  sectionTitle: { fontSize: 17, fontWeight: '500', color: COLORS.black },
+  seeAll: { fontSize: 13, color: COLORS.gold, fontWeight: '500' },
+
+  clientRow: {
+    flexDirection: 'row', alignItems: 'center',
+    marginHorizontal: SIZES.padding, marginBottom: 10,
+    padding: 14, backgroundColor: COLORS.white,
+    borderRadius: SIZES.radius, ...SHADOWS.light,
   },
-  statLabel: {
-    fontSize: 11,
-    color: COLORS.gray,
-    marginTop: 4,
-    textAlign: 'center',
-  },
-  commissionCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginHorizontal: SIZES.padding,
-    marginBottom: 16,
-    padding: 16,
-    backgroundColor: COLORS.white,
-    borderRadius: SIZES.radius,
-    ...SHADOWS.light,
-  },
-  commissionIcon: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: COLORS.beige,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  commissionInfo: {
-    flex: 1,
-    marginLeft: 14,
-  },
-  commissionLabel: {
-    fontSize: 13,
-    color: COLORS.gray,
-  },
-  commissionAmount: {
-    fontSize: 22,
-    fontWeight: '600',
-    color: COLORS.gold,
-    marginTop: 2,
-  },
-  section: {
-    marginTop: 8,
-    paddingVertical: 16,
-  },
-  sectionHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: SIZES.padding,
-    marginBottom: 16,
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: '500',
-    color: COLORS.black,
-  },
-  seeAll: {
-    fontSize: 13,
-    color: COLORS.gold,
-    fontWeight: '500',
-  },
-  appointmentCard: {
-    marginHorizontal: SIZES.padding,
-    marginBottom: 12,
-    padding: 16,
-    backgroundColor: COLORS.white,
-    borderRadius: SIZES.radius,
-    ...SHADOWS.light,
-  },
-  appointmentTime: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    marginBottom: 8,
-  },
-  appointmentTimeText: {
-    fontSize: 13,
-    color: COLORS.gold,
-    fontWeight: '500',
-  },
-  appointmentCustomer: {
-    fontSize: 16,
-    fontWeight: '500',
-    color: COLORS.black,
-    marginBottom: 8,
-  },
-  appointmentType: {
-    alignSelf: 'flex-start',
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    backgroundColor: COLORS.beige,
-    borderRadius: 4,
-  },
-  appointmentTypeText: {
-    fontSize: 12,
-    color: COLORS.gray,
-  },
-  clientCard: {
-    alignItems: 'center',
-    marginLeft: SIZES.padding,
-    width: 80,
-  },
+  clientAvatarWrap: { position: 'relative', marginRight: 12 },
   clientAvatar: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    backgroundColor: COLORS.gold,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 8,
+    width: 44, height: 44, borderRadius: 22,
+    backgroundColor: COLORS.gold, justifyContent: 'center', alignItems: 'center',
   },
-  clientAvatarText: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: COLORS.white,
+  clientAvatarText: { fontSize: 14, fontWeight: '600', color: COLORS.white },
+  clientEngDot: {
+    position: 'absolute', bottom: 1, right: 1,
+    width: 11, height: 11, borderRadius: 6,
+    borderWidth: 2, borderColor: COLORS.white,
   },
-  clientName: {
-    fontSize: 13,
-    fontWeight: '500',
-    color: COLORS.black,
-    marginBottom: 4,
+  clientInfo: { flex: 1 },
+  clientName: { fontSize: 14, fontWeight: '500', color: COLORS.black },
+  clientSub: { fontSize: 12, color: COLORS.gray, marginTop: 2 },
+  scoreBadge: {
+    width: 48, height: 48, borderRadius: 24,
+    borderWidth: 2, justifyContent: 'center', alignItems: 'center',
   },
-  tierBadge: {
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    backgroundColor: COLORS.beige,
-    borderRadius: 4,
+  scoreNum: { fontSize: 16, fontWeight: '700' },
+
+  aptCard: {
+    flexDirection: 'row', alignItems: 'center',
+    marginHorizontal: SIZES.padding, marginBottom: 8,
+    padding: 14, backgroundColor: COLORS.white,
+    borderRadius: SIZES.radius, gap: 14, ...SHADOWS.light,
   },
-  tierPlatinum: {
-    backgroundColor: '#E8E8E8',
-  },
-  tierGold: {
-    backgroundColor: '#FFF8E1',
-  },
-  tierText: {
-    fontSize: 10,
-    fontWeight: '600',
-    color: COLORS.gray,
-  },
-  activityItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginHorizontal: SIZES.padding,
-    marginBottom: 12,
-    padding: 14,
-    backgroundColor: COLORS.white,
-    borderRadius: SIZES.radius,
-    ...SHADOWS.light,
-  },
-  activityIcon: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  activitySale: {
-    backgroundColor: COLORS.success,
-  },
-  activityAppointment: {
-    backgroundColor: '#1976D2',
-  },
-  activityFollowup: {
-    backgroundColor: COLORS.gold,
-  },
-  activityInfo: {
-    flex: 1,
-    marginLeft: 12,
-  },
-  activityCustomer: {
-    fontSize: 14,
-    fontWeight: '500',
-    color: COLORS.black,
-  },
-  activityDetail: {
-    fontSize: 12,
-    color: COLORS.gray,
-    marginTop: 2,
-  },
-  activityTime: {
-    fontSize: 11,
-    color: COLORS.gray,
-  },
+  aptLeft: { flexDirection: 'row', alignItems: 'center', gap: 6, width: 130 },
+  aptTime: { fontSize: 11, color: COLORS.gold, fontWeight: '500' },
+  aptRight: { flex: 1 },
+  aptCustomer: { fontSize: 14, fontWeight: '500', color: COLORS.black },
+  aptType: { fontSize: 11, color: COLORS.gray, marginTop: 2 },
 });
 
 export default AdvisorDashboardScreen;

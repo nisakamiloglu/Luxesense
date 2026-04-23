@@ -1,153 +1,144 @@
 import React, { useState } from 'react';
 import {
-  View,
-  Text,
-  StyleSheet,
-  FlatList,
-  TouchableOpacity,
-  TextInput,
+  View, Text, StyleSheet, FlatList, TouchableOpacity, TextInput,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { COLORS, SIZES, SHADOWS } from '../constants/theme';
 import { useApp } from '../context/AppContext';
 
+const ENG_DOT = { High: COLORS.gold, Mid: '#8B7355', Low: '#C0C0C0' };
+const PF_COLOR = { Heavy: COLORS.gold, Regular: '#8B7355', Rare: '#C0C0C0' };
+
+const FILTERS = [
+  { key: 'all',          label: 'All'       },
+  { key: 'high_priority',label: 'Priority'  },
+  { key: 'follow_up',    label: 'Follow Up' },
+  { key: 'low_priority', label: 'Low'       },
+];
+
+const ScoreRing = ({ score }) => {
+  const s = score ?? 0;
+  const color = s >= 8 ? COLORS.gold : s >= 5 ? '#8B7355' : '#C0C0C0';
+  return (
+    <View style={[styles.scoreRing, { borderColor: color }]}>
+      <Text style={[styles.scoreNumber, { color }]}>{s.toFixed(1)}</Text>
+      <Text style={[styles.scoreMax, { color }]}>/10</Text>
+    </View>
+  );
+};
+
 const CustomersScreen = ({ navigation }) => {
   const { assignedCustomers } = useApp();
-  const [searchQuery, setSearchQuery] = useState('');
-  const [filterTier, setFilterTier] = useState('all');
+  const [search, setSearch] = useState('');
+  const [filter, setFilter] = useState('all');
 
-  const tiers = ['all', 'Platinum', 'Gold', 'Silver'];
+  const customers = [...assignedCustomers]
+    .filter(c => {
+      const matchSearch = c.name.toLowerCase().includes(search.toLowerCase());
+      const matchFilter = filter === 'all' || c.cviSegment === filter;
+      return matchSearch && matchFilter;
+    })
+    .sort((a, b) => (b.cviScore ?? 0) - (a.cviScore ?? 0));
 
-  const filteredCustomers = assignedCustomers.filter((customer) => {
-    const matchesSearch = customer.name.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesTier = filterTier === 'all' || customer.tier === filterTier;
-    return matchesSearch && matchesTier;
-  });
+  const renderItem = ({ item }) => {
+    const engColor = ENG_DOT[item.engagementLevel] || '#C0C0C0';
+    const pfColor  = PF_COLOR[item.purchaseFrequency] || '#C0C0C0';
+    const hasAlert = (item.alerts || []).some(a => a.urgency === 'high');
 
-  const renderCustomer = ({ item }) => (
-    <TouchableOpacity
-      style={styles.customerCard}
-      onPress={() => navigation.navigate('CustomerDetail', { customer: item })}
-    >
-      <View style={styles.customerHeader}>
-        <View style={styles.customerAvatar}>
-          <Text style={styles.avatarText}>{item.avatar}</Text>
-        </View>
-        <View style={styles.customerInfo}>
-          <Text style={styles.customerName}>{item.name}</Text>
-          <Text style={styles.customerEmail}>{item.email}</Text>
-        </View>
-        <View style={[
-          styles.tierBadge,
-          item.tier === 'Platinum' && styles.tierPlatinum,
-          item.tier === 'Gold' && styles.tierGold,
-          item.tier === 'Silver' && styles.tierSilver,
-        ]}>
-          <Text style={[
-            styles.tierText,
-            item.tier === 'Platinum' && styles.tierTextPlatinum,
-            item.tier === 'Gold' && styles.tierTextGold,
-          ]}>{item.tier}</Text>
-        </View>
-      </View>
-
-      <View style={styles.customerStats}>
-        <View style={styles.statItem}>
-          <Text style={styles.statLabel}>Total Spent</Text>
-          <Text style={styles.statValue}>${item.totalSpent.toLocaleString()}</Text>
-        </View>
-        <View style={styles.statDivider} />
-        <View style={styles.statItem}>
-          <Text style={styles.statLabel}>Last Visit</Text>
-          <Text style={styles.statValue}>
-            {new Date(item.lastVisit).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-          </Text>
-        </View>
-        <View style={styles.statDivider} />
-        <View style={styles.statItem}>
-          <Text style={styles.statLabel}>Last Purchase</Text>
-          <Text style={styles.statValue} numberOfLines={1}>{item.lastPurchase}</Text>
-        </View>
-      </View>
-
-      <View style={styles.customerPreferences}>
-        {item.preferences.map((pref, index) => (
-          <View key={index} style={styles.prefTag}>
-            <Text style={styles.prefText}>{pref}</Text>
+    return (
+      <TouchableOpacity
+        style={styles.card}
+        onPress={() => navigation.navigate('CustomerDetail', { customer: item })}
+        activeOpacity={0.8}
+      >
+        <View style={styles.cardMain}>
+          {/* Avatar */}
+          <View style={styles.avatarWrap}>
+            <View style={styles.avatar}>
+              <Text style={styles.avatarText}>{item.avatar}</Text>
+            </View>
+            <View style={[styles.engDot, { backgroundColor: engColor }]} />
+            {hasAlert && <View style={styles.alertDot} />}
           </View>
-        ))}
-      </View>
 
-      <View style={styles.customerActions}>
-        <TouchableOpacity style={styles.actionBtn}>
-          <Ionicons name="call-outline" size={18} color={COLORS.gold} />
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.actionBtn}>
-          <Ionicons name="mail-outline" size={18} color={COLORS.gold} />
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.actionBtn}>
-          <Ionicons name="calendar-outline" size={18} color={COLORS.gold} />
-        </TouchableOpacity>
-        <TouchableOpacity style={[styles.actionBtn, styles.actionBtnPrimary]}>
-          <Ionicons name="arrow-forward" size={18} color={COLORS.white} />
-        </TouchableOpacity>
-      </View>
-    </TouchableOpacity>
-  );
+          {/* Info */}
+          <View style={styles.info}>
+            <Text style={styles.name}>{item.name}</Text>
+            <Text style={styles.lastSeen}>{item.lastSeen}</Text>
+            <View style={styles.metricsRow}>
+              <View style={[styles.metric, { backgroundColor: engColor + '18' }]}>
+                <Text style={[styles.metricText, { color: engColor }]}>
+                  {item.engagementLevel}
+                </Text>
+              </View>
+              <View style={[styles.metric, { backgroundColor: pfColor + '18' }]}>
+                <Text style={[styles.metricText, { color: pfColor }]}>
+                  {item.purchaseFrequency}
+                </Text>
+              </View>
+            </View>
+          </View>
+
+          {/* Score */}
+          <ScoreRing score={item.cviScore} />
+        </View>
+
+        {/* Alert preview */}
+        {item.alerts?.[0] && (
+          <View style={styles.alertStrip}>
+            <Ionicons name="chevron-forward" size={12} color={COLORS.gray} />
+            <Text style={styles.alertStripText} numberOfLines={1}>
+              {item.alerts[0].message}
+            </Text>
+          </View>
+        )}
+      </TouchableOpacity>
+    );
+  };
 
   return (
     <View style={styles.container}>
-      {/* Header */}
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>My Clients</Text>
-        <Text style={styles.clientCount}>{assignedCustomers.length} assigned</Text>
+        <Text style={styles.title}>My Clients</Text>
+        <Text style={styles.count}>{assignedCustomers.length}</Text>
       </View>
 
-      {/* Search Bar */}
-      <View style={styles.searchContainer}>
-        <View style={styles.searchBar}>
-          <Ionicons name="search-outline" size={20} color={COLORS.gray} />
-          <TextInput
-            style={styles.searchInput}
-            placeholder="Search clients..."
-            placeholderTextColor={COLORS.gray}
-            value={searchQuery}
-            onChangeText={setSearchQuery}
-          />
-        </View>
+      {/* Search */}
+      <View style={styles.searchWrap}>
+        <Ionicons name="search-outline" size={18} color={COLORS.gray} />
+        <TextInput
+          style={styles.searchInput}
+          placeholder="Search clients..."
+          placeholderTextColor={COLORS.gray}
+          value={search}
+          onChangeText={setSearch}
+        />
       </View>
 
-      {/* Tier Filter */}
-      <View style={styles.filterContainer}>
-        {tiers.map((tier) => (
+      {/* Filter */}
+      <View style={styles.filterRow}>
+        {FILTERS.map(f => (
           <TouchableOpacity
-            key={tier}
-            style={[
-              styles.filterBtn,
-              filterTier === tier && styles.filterBtnActive,
-            ]}
-            onPress={() => setFilterTier(tier)}
+            key={f.key}
+            style={[styles.filterChip, filter === f.key && styles.filterChipActive]}
+            onPress={() => setFilter(f.key)}
           >
-            <Text style={[
-              styles.filterText,
-              filterTier === tier && styles.filterTextActive,
-            ]}>
-              {tier === 'all' ? 'All' : tier}
+            <Text style={[styles.filterChipText, filter === f.key && styles.filterChipTextActive]}>
+              {f.label}
             </Text>
           </TouchableOpacity>
         ))}
       </View>
 
-      {/* Customers List */}
       <FlatList
-        data={filteredCustomers}
-        renderItem={renderCustomer}
-        keyExtractor={(item) => item.id.toString()}
-        contentContainerStyle={styles.listContainer}
+        data={customers}
+        renderItem={renderItem}
+        keyExtractor={item => item.id.toString()}
+        contentContainerStyle={styles.list}
         showsVerticalScrollIndicator={false}
         ListEmptyComponent={
-          <View style={styles.emptyState}>
-            <Ionicons name="people-outline" size={48} color={COLORS.lightGray} />
+          <View style={styles.empty}>
+            <Ionicons name="people-outline" size={44} color={COLORS.beigeDark} />
             <Text style={styles.emptyText}>No clients found</Text>
           </View>
         }
@@ -157,207 +148,83 @@ const CustomersScreen = ({ navigation }) => {
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: COLORS.cream,
-  },
+  container: { flex: 1, backgroundColor: COLORS.cream },
+
   header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: SIZES.padding,
-    paddingTop: 60,
-    paddingBottom: 16,
+    flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
+    paddingHorizontal: SIZES.padding, paddingTop: 60, paddingBottom: 16,
   },
-  headerTitle: {
-    fontSize: 28,
-    fontWeight: '500',
-    color: COLORS.black,
+  title: { fontSize: 28, fontWeight: '500', color: COLORS.black },
+  count: { fontSize: 28, fontWeight: '300', color: COLORS.gray },
+
+  searchWrap: {
+    flexDirection: 'row', alignItems: 'center',
+    marginHorizontal: SIZES.padding, marginBottom: 12,
+    backgroundColor: COLORS.white, borderRadius: SIZES.radius,
+    paddingHorizontal: 16, height: 46, gap: 10, ...SHADOWS.light,
   },
-  clientCount: {
-    fontSize: 14,
-    color: COLORS.gray,
+  searchInput: { flex: 1, fontSize: 14, color: COLORS.black },
+
+  filterRow: {
+    flexDirection: 'row', paddingHorizontal: SIZES.padding,
+    marginBottom: 12, gap: 8,
   },
-  searchContainer: {
-    paddingHorizontal: SIZES.padding,
-    marginBottom: 16,
+  filterChip: {
+    paddingHorizontal: 14, paddingVertical: 7,
+    backgroundColor: COLORS.white, borderRadius: 20, ...SHADOWS.light,
   },
-  searchBar: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: COLORS.white,
-    borderRadius: SIZES.radius,
-    paddingHorizontal: 16,
-    height: 48,
-    ...SHADOWS.light,
+  filterChipActive: { backgroundColor: COLORS.black },
+  filterChipText: { fontSize: 12, fontWeight: '500', color: COLORS.black },
+  filterChipTextActive: { color: COLORS.white },
+
+  list: { paddingHorizontal: SIZES.padding, paddingBottom: 100 },
+
+  card: {
+    backgroundColor: COLORS.white, borderRadius: SIZES.radius,
+    marginBottom: 12, padding: 16, ...SHADOWS.light,
   },
-  searchInput: {
-    flex: 1,
-    marginLeft: 12,
-    fontSize: 15,
-    color: COLORS.black,
+  cardMain: { flexDirection: 'row', alignItems: 'center' },
+
+  avatarWrap: { position: 'relative', marginRight: 14 },
+  avatar: {
+    width: 48, height: 48, borderRadius: 24,
+    backgroundColor: COLORS.gold, justifyContent: 'center', alignItems: 'center',
   },
-  filterContainer: {
-    flexDirection: 'row',
-    paddingHorizontal: SIZES.padding,
-    marginBottom: 16,
-    gap: 10,
+  avatarText: { fontSize: 16, fontWeight: '600', color: COLORS.white },
+  engDot: {
+    position: 'absolute', bottom: 1, right: 1,
+    width: 11, height: 11, borderRadius: 6,
+    borderWidth: 2, borderColor: COLORS.white,
   },
-  filterBtn: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    backgroundColor: COLORS.white,
-    borderRadius: 20,
-    ...SHADOWS.light,
+  alertDot: {
+    position: 'absolute', top: -2, right: -2,
+    width: 10, height: 10, borderRadius: 5,
+    backgroundColor: COLORS.gold, borderWidth: 2, borderColor: COLORS.white,
   },
-  filterBtnActive: {
-    backgroundColor: COLORS.black,
+
+  info: { flex: 1 },
+  name: { fontSize: 15, fontWeight: '500', color: COLORS.black },
+  lastSeen: { fontSize: 12, color: COLORS.gray, marginTop: 2, marginBottom: 6 },
+  metricsRow: { flexDirection: 'row', gap: 6 },
+  metric: { paddingHorizontal: 8, paddingVertical: 3, borderRadius: 6 },
+  metricText: { fontSize: 11, fontWeight: '600' },
+
+  scoreRing: {
+    width: 56, height: 56, borderRadius: 28,
+    borderWidth: 2, justifyContent: 'center', alignItems: 'center',
   },
-  filterText: {
-    fontSize: 13,
-    fontWeight: '500',
-    color: COLORS.black,
+  scoreNumber: { fontSize: 18, fontWeight: '700', lineHeight: 20 },
+  scoreMax: { fontSize: 9, fontWeight: '500', lineHeight: 11 },
+
+  alertStrip: {
+    flexDirection: 'row', alignItems: 'center', gap: 6,
+    marginTop: 12, paddingTop: 10,
+    borderTopWidth: 1, borderTopColor: COLORS.beigeDark,
   },
-  filterTextActive: {
-    color: COLORS.white,
-  },
-  listContainer: {
-    paddingHorizontal: SIZES.padding,
-    paddingBottom: 100,
-  },
-  customerCard: {
-    backgroundColor: COLORS.white,
-    borderRadius: SIZES.radius,
-    padding: 16,
-    marginBottom: 16,
-    ...SHADOWS.light,
-  },
-  customerHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 16,
-  },
-  customerAvatar: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
-    backgroundColor: COLORS.gold,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  avatarText: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: COLORS.white,
-  },
-  customerInfo: {
-    flex: 1,
-    marginLeft: 14,
-  },
-  customerName: {
-    fontSize: 16,
-    fontWeight: '500',
-    color: COLORS.black,
-  },
-  customerEmail: {
-    fontSize: 13,
-    color: COLORS.gray,
-    marginTop: 2,
-  },
-  tierBadge: {
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 4,
-    backgroundColor: COLORS.beige,
-  },
-  tierPlatinum: {
-    backgroundColor: '#E8E8E8',
-  },
-  tierGold: {
-    backgroundColor: '#FFF8E1',
-  },
-  tierSilver: {
-    backgroundColor: '#F5F5F5',
-  },
-  tierText: {
-    fontSize: 11,
-    fontWeight: '600',
-    color: COLORS.gray,
-  },
-  tierTextPlatinum: {
-    color: '#424242',
-  },
-  tierTextGold: {
-    color: '#F57C00',
-  },
-  customerStats: {
-    flexDirection: 'row',
-    paddingVertical: 12,
-    borderTopWidth: 1,
-    borderBottomWidth: 1,
-    borderColor: COLORS.beigeDark,
-    marginBottom: 12,
-  },
-  statItem: {
-    flex: 1,
-    alignItems: 'center',
-  },
-  statLabel: {
-    fontSize: 11,
-    color: COLORS.gray,
-    marginBottom: 4,
-  },
-  statValue: {
-    fontSize: 13,
-    fontWeight: '500',
-    color: COLORS.black,
-  },
-  statDivider: {
-    width: 1,
-    backgroundColor: COLORS.beigeDark,
-  },
-  customerPreferences: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
-    marginBottom: 12,
-  },
-  prefTag: {
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    backgroundColor: COLORS.beige,
-    borderRadius: 4,
-  },
-  prefText: {
-    fontSize: 11,
-    color: COLORS.gray,
-  },
-  customerActions: {
-    flexDirection: 'row',
-    justifyContent: 'flex-end',
-    gap: 10,
-  },
-  actionBtn: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: COLORS.beige,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  actionBtnPrimary: {
-    backgroundColor: COLORS.black,
-  },
-  emptyState: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingTop: 60,
-  },
-  emptyText: {
-    fontSize: 15,
-    color: COLORS.gray,
-    marginTop: 12,
-  },
+  alertStripText: { fontSize: 12, color: COLORS.gray, flex: 1 },
+
+  empty: { alignItems: 'center', paddingTop: 60, gap: 10 },
+  emptyText: { fontSize: 14, color: COLORS.gray },
 });
 
 export default CustomersScreen;
