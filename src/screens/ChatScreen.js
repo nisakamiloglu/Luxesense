@@ -21,7 +21,11 @@ import { getSAResponse } from '../services/groqService';
 import { products } from '../constants/mockData';
 
 const ChatScreen = ({ route, navigation }) => {
-  const { advisor } = route.params;
+  const advisor = route?.params?.advisor || {
+    name: 'Isabelle',
+    fullName: 'Isabelle Moreau',
+    role: 'Senior Sales Advisor',
+  };
   const { user, saChatMessages, setSaChatMessages, language } = useApp();
   const { t } = useTranslation();
   const scrollViewRef = useRef();
@@ -327,14 +331,7 @@ const ChatScreen = ({ route, navigation }) => {
   };
 
   const handleCall = () => {
-    Alert.alert(
-      t('profile.callAdvisor'),
-      `${t('profile.call')} ${advisor.name}?`,
-      [
-        { text: t('common.cancel'), style: 'cancel' },
-        { text: t('profile.call'), onPress: () => Linking.openURL(`tel:${advisor.phone}`) },
-      ]
-    );
+    // Feature not implemented yet
   };
 
   useEffect(() => {

@@ -14,7 +14,7 @@ export const products = [
     color: 'Orange',
     inStock: true,
     description: 'The legendary Birkin bag in Togo calfskin with gold hardware.',
-    image: require('../images/birkin.webp'),
+    image: require('../images/Hermes/birkin.webp'),
   },
   {
     id: 2,
@@ -25,7 +25,7 @@ export const products = [
     color: 'Noir',
     inStock: true,
     description: 'The iconic Kelly in Epsom calfskin with palladium hardware.',
-    image: require('../images/kelly.webp'),
+    image: require('../images/Hermes/kelly.webp'),
   },
   {
     id: 3,
@@ -36,7 +36,7 @@ export const products = [
     color: 'Gold',
     inStock: true,
     description: 'The playful Picotin Lock in Clemence leather.',
-    image: require('../images/picotin.webp'),
+    image: require('../images/Hermes/picotin.webp'),
   },
   {
     id: 4,
@@ -47,7 +47,7 @@ export const products = [
     color: 'Noir',
     inStock: true,
     description: 'The sleek Constance with signature H clasp.',
-    image: require('../images/constance.webp'),
+    image: require('../images/Hermes/constance.webp'),
   },
   {
     id: 5,
@@ -58,7 +58,7 @@ export const products = [
     color: 'Craie',
     inStock: true,
     description: 'The versatile Lindy in Clemence leather.',
-    image: require('../images/lindy.webp'),
+    image: require('../images/Hermes/lindy.webp'),
   },
   {
     id: 6,
@@ -69,7 +69,7 @@ export const products = [
     color: 'Orange',
     inStock: true,
     description: 'Silk twilly to adorn your bag or wrist.',
-    image: require('../images/twilly.webp'),
+    image: require('../images/Hermes/twilly.webp'),
   },
 
   // ============ CHANEL (5 products) ============
@@ -82,7 +82,7 @@ export const products = [
     color: 'Black',
     inStock: true,
     description: 'The CHANEL Boy with architectural hardware.',
-    image: require('../images/boybag.webp'),
+    image: require('../images/Chanel/boybag.webp'),
   },
   {
     id: 8,
@@ -93,7 +93,7 @@ export const products = [
     color: 'Black',
     inStock: true,
     description: 'The original 2.55 designed by Coco Chanel.',
-    image: require('../images/chanel25.webp'),
+    image: require('../images/Chanel/chanel25.webp'),
   },
   {
     id: 9,
@@ -139,7 +139,7 @@ export const products = [
     color: 'Black',
     inStock: true,
     description: 'The iconic Lady Dior in Cannage lambskin.',
-    image: require('../images/dior.webp'),
+    image: require('../images/Dior/dior.webp'),
   },
   {
     id: 13,
@@ -150,7 +150,7 @@ export const products = [
     color: 'Oblique',
     inStock: true,
     description: 'The reinvented Dior Saddle in Oblique jacquard.',
-    image: require('../images/saddle.webp'),
+    image: require('../images/Dior/saddle.webp'),
   },
   {
     id: 14,
@@ -161,7 +161,7 @@ export const products = [
     color: 'Blue Oblique',
     inStock: true,
     description: 'The Dior Book Tote with iconic Oblique motif.',
-    image: require('../images/tote.webp'),
+    image: require('../images/Dior/tote.webp'),
   },
   {
     id: 15,
@@ -310,7 +310,7 @@ export const products = [
     color: 'Yellow Gold',
     inStock: true,
     description: 'A nail transformed into fine jewelry.',
-    image: require('../images/juste.webp'),
+    image: require('../images/Cartier/juste.webp'),
   },
   {
     id: 28,
@@ -481,7 +481,7 @@ export const products = [
     color: 'Multicolor',
     inStock: true,
     description: 'The iconic Carré in silk twill.',
-    image: require('../images/carre.webp'),
+    image: require('../images/Hermes/carre.webp'),
   },
 ];
 
@@ -498,12 +498,10 @@ export const brands = [
   { id: 'ROLEX', name: 'Rolex' },
 ];
 
-// Categories
+// Categories (only categories with actual products)
 export const categories = [
   { id: 'all', name: 'All', icon: 'grid-outline' },
-  { id: 'clothing', name: 'Clothing', icon: 'shirt-outline' },
   { id: 'bags', name: 'Bags', icon: 'bag-outline' },
-  { id: 'shoes', name: 'Shoes', icon: 'footsteps-outline' },
   { id: 'jewelry', name: 'Jewelry', icon: 'diamond-outline' },
   { id: 'watches', name: 'Watches', icon: 'watch-outline' },
   { id: 'accessories', name: 'Accessories', icon: 'glasses-outline' },
@@ -511,14 +509,14 @@ export const categories = [
 
 // Featured Brands for Home Page
 export const featuredBrands = [
-  { id: 'HERMÈS', name: 'Hermès', image: require('../images/hermes3.webp'), itemCount: 7 },
-  { id: 'CHANEL', name: 'Chanel', image: require('../images/boybag.webp'), itemCount: 5 },
-  { id: 'DIOR', name: 'Dior', image: require('../images/dior.webp'), itemCount: 5 },
-  { id: 'LOUIS VUITTON', name: 'Louis Vuitton', image: PLACEHOLDER, itemCount: 5 },
-  { id: 'GUCCI', name: 'Gucci', image: PLACEHOLDER, itemCount: 5 },
-  { id: 'CARTIER', name: 'Cartier', image: require('../images/juste.webp'), itemCount: 5 },
-  { id: 'ROLEX', name: 'Rolex', image: PLACEHOLDER, itemCount: 5 },
-  { id: 'PRADA', name: 'Prada', image: PLACEHOLDER, itemCount: 5 },
+  { id: 'HERMÈS', name: 'Hermès', image: require('../images/Hermes/hermes3.webp'), itemCount: 7 },
+  { id: 'CHANEL', name: 'Chanel', image: require('../images/Chanel/chanel1.png'), itemCount: 5 },
+  { id: 'LOUIS VUITTON', name: 'Louis Vuitton', image: require('../images/LV/LV.jpg'), itemCount: 5 },
+  { id: 'DIOR', name: 'Dior', image: require('../images/Dior/dior1.png'), itemCount: 5, imagePosition: 'top' },
+  { id: 'GUCCI', name: 'Gucci', image: require('../images/Gucci/Gucci.jpeg'), itemCount: 5 },
+  { id: 'CARTIER', name: 'Cartier', image: require('../images/Cartier/cartier1.png'), itemCount: 5 },
+  { id: 'ROLEX', name: 'Rolex', image: require('../images/Rolex/Rolex1.jpg'), itemCount: 5, imagePosition: 'top' },
+  { id: 'PRADA', name: 'Prada', image: require('../images/Prada/prada-main.jpg'), itemCount: 5 },
 ];
 
 // For backwards compatibility
@@ -563,14 +561,14 @@ export const banners = [
     id: 1,
     title: 'Hermès Icons',
     subtitle: 'Birkin, Kelly & Constance',
-    image: require('../images/birkin.webp'),
+    image: require('../images/Hermes/birkin.webp'),
     color: '#FF6B35',
   },
   {
     id: 2,
     title: 'Fine Jewelry',
     subtitle: 'Cartier Collection',
-    image: require('../images/juste.webp'),
+    image: require('../images/Cartier/juste.webp'),
     color: '#C9A962',
   },
 ];

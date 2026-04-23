@@ -26,15 +26,15 @@ import ProfileScreen from '../screens/ProfileScreen';
 import SettingsScreen from '../screens/SettingsScreen';
 import AIStylistScreen from '../screens/AIStylistScreen';
 import ChatScreen from '../screens/ChatScreen';
+import StyleQuizScreen from '../screens/StyleQuizScreen';
 
 // Advisor Screens
 import AdvisorDashboardScreen from '../screens/AdvisorDashboardScreen';
 import CustomersScreen from '../screens/CustomersScreen';
 import CustomerDetailScreen from '../screens/CustomerDetailScreen';
-import AdvisorCalendarScreen from '../screens/AdvisorCalendarScreen';
-import AdvisorPurchaseHistoryScreen from '../screens/AdvisorPurchaseHistoryScreen';
 import AdvisorChatListScreen from '../screens/AdvisorChatListScreen';
 import AdvisorChatScreen from '../screens/AdvisorChatScreen';
+import ActivityScreen from '../screens/ActivityScreen';
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
@@ -52,8 +52,8 @@ const CustomerTabs = () => {
             case 'Home':
               iconName = focused ? 'home' : 'home-outline';
               break;
-            case 'Catalog':
-              iconName = focused ? 'grid' : 'grid-outline';
+            case 'Shop':
+              iconName = focused ? 'bag' : 'bag-outline';
               break;
             case 'Wishlist':
               iconName = focused ? 'heart' : 'heart-outline';
@@ -67,11 +67,11 @@ const CustomerTabs = () => {
 
           return <Ionicons name={iconName} size={22} color={color} />;
         },
-        tabBarActiveTintColor: COLORS.gold,
-        tabBarInactiveTintColor: COLORS.gray,
+        tabBarActiveTintColor: '#1A1A1A',
+        tabBarInactiveTintColor: '#AAAAAA',
         tabBarStyle: {
-          backgroundColor: COLORS.white,
-          borderTopColor: COLORS.beigeDark,
+          backgroundColor: '#FFFFFF',
+          borderTopColor: '#F0EDE8',
           borderTopWidth: 1,
           paddingTop: 8,
           paddingBottom: 28,
@@ -79,13 +79,13 @@ const CustomerTabs = () => {
         },
         tabBarLabelStyle: {
           fontSize: 11,
-          fontWeight: '500',
+          fontWeight: '600',
           marginTop: 4,
         },
       })}
     >
       <Tab.Screen name="Home" component={HomeScreen} />
-      <Tab.Screen name="Catalog" component={CatalogScreen} />
+      <Tab.Screen name="Shop" component={CatalogScreen} />
       <Tab.Screen name="Wishlist" component={WishlistScreen} />
       <Tab.Screen name="Profile" component={ProfileScreen} />
     </Tab.Navigator>
@@ -105,11 +105,11 @@ const AdvisorTabs = () => {
             case 'Dashboard':
               iconName = focused ? 'grid' : 'grid-outline';
               break;
-            case 'Customers':
+            case 'Clients':
               iconName = focused ? 'people' : 'people-outline';
               break;
-            case 'History':
-              iconName = focused ? 'receipt' : 'receipt-outline';
+            case 'Activity':
+              iconName = focused ? 'flash' : 'flash-outline';
               break;
             case 'Messages':
               iconName = focused ? 'chatbubbles' : 'chatbubbles-outline';
@@ -120,11 +120,11 @@ const AdvisorTabs = () => {
 
           return <Ionicons name={iconName} size={22} color={color} />;
         },
-        tabBarActiveTintColor: COLORS.gold,
-        tabBarInactiveTintColor: COLORS.gray,
+        tabBarActiveTintColor: '#1A1A1A',
+        tabBarInactiveTintColor: '#AAAAAA',
         tabBarStyle: {
-          backgroundColor: COLORS.white,
-          borderTopColor: COLORS.beigeDark,
+          backgroundColor: '#FFFFFF',
+          borderTopColor: '#F0EDE8',
           borderTopWidth: 1,
           paddingTop: 8,
           paddingBottom: 28,
@@ -132,14 +132,14 @@ const AdvisorTabs = () => {
         },
         tabBarLabelStyle: {
           fontSize: 11,
-          fontWeight: '500',
+          fontWeight: '600',
           marginTop: 4,
         },
       })}
     >
       <Tab.Screen name="Dashboard" component={AdvisorDashboardScreen} />
-      <Tab.Screen name="Customers" component={CustomersScreen} />
-      <Tab.Screen name="History" component={AdvisorPurchaseHistoryScreen} />
+      <Tab.Screen name="Clients" component={CustomersScreen} />
+      <Tab.Screen name="Activity" component={ActivityScreen} />
       <Tab.Screen name="Messages" component={AdvisorChatListScreen} />
     </Tab.Navigator>
   );
@@ -189,6 +189,7 @@ const AppNavigator = () => {
       <Stack.Screen name="AIStylist" component={AIStylistScreen} />
       <Stack.Screen name="Chat" component={ChatScreen} />
       <Stack.Screen name="Settings" component={SettingsScreen} />
+      <Stack.Screen name="StyleQuiz" component={StyleQuizScreen} />
 
       {/* Advisor Flow */}
       <Stack.Screen name="AdvisorTabs" component={AdvisorTabs} />

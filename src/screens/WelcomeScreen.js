@@ -1,11 +1,11 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Animated } from 'react-native';
 import { COLORS, SIZES } from '../constants/theme';
 import { useApp } from '../context/AppContext';
 
 const WelcomeScreen = ({ navigation }) => {
-  const { user, getGreeting } = useApp();
-  const fadeAnim = new Animated.Value(0);
+  const { user, getGreeting, isNewUser } = useApp();
+  const fadeAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
     Animated.timing(fadeAnim, {
@@ -23,8 +23,17 @@ const WelcomeScreen = ({ navigation }) => {
 
         <View style={styles.divider} />
 
-        <Text style={styles.subtitle}>Welcome back to your</Text>
-        <Text style={styles.subtitleBold}>personal luxury experience</Text>
+        {isNewUser ? (
+          <>
+            <Text style={styles.subtitle}>Welcome to your</Text>
+            <Text style={styles.subtitleBold}>personal luxury experience</Text>
+          </>
+        ) : (
+          <>
+            <Text style={styles.subtitle}>Welcome back to your</Text>
+            <Text style={styles.subtitleBold}>personal luxury experience</Text>
+          </>
+        )}
       </Animated.View>
 
       <TouchableOpacity

@@ -12,95 +12,71 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { COLORS, SIZES, SHADOWS } from '../constants/theme';
+import { COLORS, SIZES } from '../constants/theme';
 import { useApp } from '../context/AppContext';
 import { useToast } from '../context/ToastContext';
 import { registerUser } from '../services/api';
 
+const Field = ({ label, field, placeholder, secure, keyboard, caps, extra, value, onChange, showPw }) => (
+  <View style={styles.field}>
+    <Text style={styles.label}>{label}</Text>
+    <View style={styles.pwRow}>
+      <TextInput
+        style={[styles.input, { flex: 1 }]}
+        value={value}
+        onChangeText={onChange}
+        placeholder={placeholder}
+        placeholderTextColor="#C0B8B0"
+        secureTextEntry={secure && !showPw}
+        keyboardType={keyboard || 'default'}
+        autoCapitalize={caps || 'none'}
+      />
+      {extra}
+    </View>
+    <View style={styles.inputLine} />
+  </View>
+);
+
 const RegisterScreen = ({ navigation }) => {
   const { login } = useApp();
   const { showSuccess, showError, showWarning } = useToast();
-  const [userType, setUserType] = useState(null); // 'customer' or 'advisor'
+  const [userType, setUserType] = useState('customer');
   const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-
-  // Form fields
   const [formData, setFormData] = useState({
-    fullName: '',
-    email: '',
-    phone: '',
-    password: '',
-    confirmPassword: '',
-    employeeId: '',
-    storeLocation: '',
+    fullName: '', email: '', phone: '', password: '', confirmPassword: '',
+    employeeId: '', storeLocation: '',
   });
-
-  const fadeAnim = useRef(new Animated.Value(0)).current;
-  const slideAnim = useRef(new Animated.Value(30)).current;
+  const fade = useRef(new Animated.Value(0)).current;
+  const slide = useRef(new Animated.Value(24)).current;
 
   useEffect(() => {
     Animated.parallel([
-      Animated.timing(fadeAnim, {
-        toValue: 1,
-        duration: 800,
-        useNativeDriver: true,
-      }),
-      Animated.timing(slideAnim, {
-        toValue: 0,
-        duration: 600,
-        useNativeDriver: true,
-      }),
+      Animated.timing(fade, { toValue: 1, duration: 700, useNativeDriver: true }),
+      Animated.timing(slide, { toValue: 0, duration: 600, useNativeDriver: true }),
     ]).start();
   }, []);
 
-  const updateField = (field, value) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
-  };
+  const update = (key, val) => setFormData(p => ({ ...p, [key]: val }));
 
-  const validateForm = () => {
+  const validate = () => {
     const { fullName, email, password, confirmPassword, employeeId, storeLocation } = formData;
-
-    if (!fullName.trim()) {
-      showWarning('Missing Information', 'Please enter your full name');
-      return false;
-    }
-
-    if (!email.trim() || !email.includes('@')) {
-      showWarning('Invalid Email', 'Please enter a valid email address');
-      return false;
-    }
-
-    if (password.length < 4) {
-      showWarning('Weak Password', 'Password must be at least 4 characters');
-      return false;
-    }
-
-    if (password !== confirmPassword) {
-      showError('Password Mismatch', 'Passwords do not match');
-      return false;
-    }
-
+    if (!fullName.trim()) { showWarning('Missing', 'Please enter your full name'); return false; }
+    if (!email.includes('@')) { showWarning('Invalid Email', 'Enter a valid email'); return false; }
+    if (password.length < 4) { showWarning('Weak Password', 'At least 4 characters'); return false; }
+    if (password !== confirmPassword) { showError('Mismatch', 'Passwords do not match'); return false; }
     if (userType === 'advisor') {
-      if (!employeeId.trim()) {
-        showWarning('Missing Information', 'Please enter your Employee ID');
-        return false;
-      }
-      if (!storeLocation.trim()) {
-        showWarning('Missing Information', 'Please enter your Store Location');
-        return false;
-      }
+      if (!employeeId.trim()) { showWarning('Missing', 'Enter Employee ID'); return false; }
+      if (!storeLocation.trim()) { showWarning('Missing', 'Enter Store Location'); return false; }
     }
-
     return true;
   };
 
   const handleRegister = async () => {
-    if (!validateForm()) return;
-
+    if (!validate()) return;
     setLoading(true);
     try {
-      const userData = {
+      const response = await registerUser({
         name: formData.fullName,
         email: formData.email.toLowerCase(),
         password: formData.password,
@@ -108,494 +84,188 @@ const RegisterScreen = ({ navigation }) => {
         phone: formData.phone || undefined,
         employeeId: userType === 'advisor' ? formData.employeeId : undefined,
         storeLocation: userType === 'advisor' ? formData.storeLocation : undefined,
-      };
-
-      const response = await registerUser(userData);
-
+      });
       if (response.success) {
-        showSuccess('Welcome!', `Account created successfully, ${formData.fullName}!`);
-        login(userType, response.user, response.token);
+        showSuccess('Welcome!', `Account created, ${formData.fullName}!`);
+        login(userType, response.user, response.token, true);
         setTimeout(() => {
           if (userType === 'customer') {
-            navigation.replace('Splash');
+            navigation.replace('StyleQuiz');
           } else {
             navigation.replace('AdvisorTabs');
           }
-        }, 1500);
+        }, 1200);
       } else {
-        showError('Registration Failed', response.message || 'Please try again');
+        showError('Failed', response.message || 'Please try again');
       }
-    } catch (error) {
-      showError('Connection Error', 'Please check your internet connection');
+    } catch {
+      showError('Connection Error', 'Check your internet connection');
     } finally {
       setLoading(false);
     }
   };
 
-  // Role Selection Screen
-  if (!userType) {
-    return (
-      <View style={styles.container}>
-        <TouchableOpacity
-          style={styles.backButton}
-          onPress={() => navigation.goBack()}
-        >
-          <Ionicons name="arrow-back" size={24} color={COLORS.black} />
+  return (
+    <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+      <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
+        <TouchableOpacity style={styles.backBtn} onPress={() => navigation.goBack()}>
+          <Ionicons name="arrow-back" size={22} color="#1A1A1A" />
         </TouchableOpacity>
 
-        <Animated.View
-          style={[
-            styles.brandSection,
-            { opacity: fadeAnim, transform: [{ translateY: slideAnim }] },
-          ]}
-        >
-          <Text style={styles.brandName}>LUXESENSE</Text>
-          <Text style={styles.brandAI}>AI</Text>
-          <View style={styles.brandDivider} />
-        </Animated.View>
+        <Animated.View style={[styles.inner, { opacity: fade, transform: [{ translateY: slide }] }]}>
+          <Text style={styles.title}>Create{'\n'}your account</Text>
 
-        <Animated.View style={[styles.roleSection, { opacity: fadeAnim }]}>
-          <Text style={styles.selectTitle}>Create Account</Text>
-          <Text style={styles.selectSubtitle}>Select your account type to get started</Text>
-
-          <TouchableOpacity
-            style={styles.roleCard}
-            onPress={() => setUserType('customer')}
-          >
-            <View style={styles.roleIcon}>
-              <Ionicons name="person-outline" size={28} color={COLORS.gold} />
-            </View>
-            <View style={styles.roleInfo}>
-              <Text style={styles.roleTitle}>Customer</Text>
-              <Text style={styles.roleDesc}>Shop luxury products with AI assistance</Text>
-            </View>
-            <Ionicons name="chevron-forward" size={20} color={COLORS.gray} />
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={styles.roleCard}
-            onPress={() => setUserType('advisor')}
-          >
-            <View style={styles.roleIcon}>
-              <Ionicons name="briefcase-outline" size={28} color={COLORS.gold} />
-            </View>
-            <View style={styles.roleInfo}>
-              <Text style={styles.roleTitle}>Sales Advisor</Text>
-              <Text style={styles.roleDesc}>Manage customers and track sales</Text>
-            </View>
-            <Ionicons name="chevron-forward" size={20} color={COLORS.gray} />
-          </TouchableOpacity>
-        </Animated.View>
-
-        <View style={styles.loginPrompt}>
-          <Text style={styles.loginPromptText}>Already have an account? </Text>
-          <TouchableOpacity onPress={() => navigation.navigate('Login')}>
-            <Text style={styles.loginLink}>Sign In</Text>
-          </TouchableOpacity>
-        </View>
-      </View>
-    );
-  }
-
-  // Registration Form
-  return (
-    <KeyboardAvoidingView
-      style={styles.container}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-    >
-      <TouchableOpacity
-        style={styles.backButton}
-        onPress={() => {
-          setUserType(null);
-          setFormData({
-            fullName: '',
-            email: '',
-            phone: '',
-            password: '',
-            confirmPassword: '',
-            employeeId: '',
-            storeLocation: '',
-          });
-        }}
-      >
-        <Ionicons name="arrow-back" size={24} color={COLORS.black} />
-      </TouchableOpacity>
-
-      <ScrollView
-        style={styles.scrollView}
-        contentContainerStyle={styles.scrollContent}
-        showsVerticalScrollIndicator={false}
-      >
-        <View style={styles.formHeader}>
-          <Text style={styles.brandNameSmall}>LUXESENSE AI</Text>
-          <Text style={styles.formTitle}>
-            {userType === 'customer' ? 'Customer Registration' : 'Advisor Registration'}
-          </Text>
-          <Text style={styles.formSubtitle}>
-            {userType === 'customer'
-              ? 'Create your account to start shopping'
-              : 'Register to access the sales dashboard'}
-          </Text>
-        </View>
-
-        <View style={styles.form}>
-          {/* Full Name */}
-          <View style={styles.inputGroup}>
-            <Text style={styles.inputLabel}>Full Name *</Text>
-            <View style={styles.inputWrapper}>
-              <Ionicons name="person-outline" size={20} color={COLORS.gray} />
-              <TextInput
-                style={styles.input}
-                value={formData.fullName}
-                onChangeText={(v) => updateField('fullName', v)}
-                placeholder="Enter your full name"
-                placeholderTextColor={COLORS.gray}
-                autoCapitalize="words"
-              />
-            </View>
+          {/* Role Tabs */}
+          <View style={styles.roleTabs}>
+            {['customer', 'advisor'].map((r) => (
+              <TouchableOpacity
+                key={r}
+                style={[styles.roleTab, userType === r && styles.roleTabActive]}
+                onPress={() => setUserType(r)}
+              >
+                <Text style={[styles.roleTabText, userType === r && styles.roleTabTextActive]}>
+                  {r === 'customer' ? 'Customer' : 'Advisor'}
+                </Text>
+              </TouchableOpacity>
+            ))}
           </View>
 
-          {/* Email */}
-          <View style={styles.inputGroup}>
-            <Text style={styles.inputLabel}>Email Address *</Text>
-            <View style={styles.inputWrapper}>
-              <Ionicons name="mail-outline" size={20} color={COLORS.gray} />
-              <TextInput
-                style={styles.input}
-                value={formData.email}
-                onChangeText={(v) => updateField('email', v)}
-                placeholder="Enter your email"
-                placeholderTextColor={COLORS.gray}
-                keyboardType="email-address"
-                autoCapitalize="none"
-              />
-            </View>
-          </View>
-
-          {/* Phone (Customer only) */}
+          <Field label="Your Name" value={formData.fullName} onChange={v => update('fullName', v)} placeholder="Enter your full name" caps="words" />
+          <Field label="Email" value={formData.email} onChange={v => update('email', v)} placeholder="username@email.com" keyboard="email-address" />
           {userType === 'customer' && (
-            <View style={styles.inputGroup}>
-              <Text style={styles.inputLabel}>Phone Number (Optional)</Text>
-              <View style={styles.inputWrapper}>
-                <Ionicons name="call-outline" size={20} color={COLORS.gray} />
-                <TextInput
-                  style={styles.input}
-                  value={formData.phone}
-                  onChangeText={(v) => updateField('phone', v)}
-                  placeholder="Enter your phone number"
-                  placeholderTextColor={COLORS.gray}
-                  keyboardType="phone-pad"
-                />
-              </View>
-            </View>
+            <Field label="Phone (Optional)" value={formData.phone} onChange={v => update('phone', v)} placeholder="+1 000 000 0000" keyboard="phone-pad" />
           )}
-
-          {/* Employee ID (Advisor only) */}
           {userType === 'advisor' && (
-            <View style={styles.inputGroup}>
-              <Text style={styles.inputLabel}>Employee ID *</Text>
-              <View style={styles.inputWrapper}>
-                <Ionicons name="id-card-outline" size={20} color={COLORS.gray} />
-                <TextInput
-                  style={styles.input}
-                  value={formData.employeeId}
-                  onChangeText={(v) => updateField('employeeId', v)}
-                  placeholder="Enter your employee ID"
-                  placeholderTextColor={COLORS.gray}
-                  autoCapitalize="characters"
-                />
-              </View>
-            </View>
+            <>
+              <Field label="Employee ID" value={formData.employeeId} onChange={v => update('employeeId', v)} placeholder="EMP-12345" caps="characters" />
+              <Field label="Store Location" value={formData.storeLocation} onChange={v => update('storeLocation', v)} placeholder="Store name or city" />
+            </>
           )}
-
-          {/* Store Location (Advisor only) */}
-          {userType === 'advisor' && (
-            <View style={styles.inputGroup}>
-              <Text style={styles.inputLabel}>Store Location *</Text>
-              <View style={styles.inputWrapper}>
-                <Ionicons name="location-outline" size={20} color={COLORS.gray} />
-                <TextInput
-                  style={styles.input}
-                  value={formData.storeLocation}
-                  onChangeText={(v) => updateField('storeLocation', v)}
-                  placeholder="Enter store name or location"
-                  placeholderTextColor={COLORS.gray}
-                />
-              </View>
-            </View>
-          )}
-
-          {/* Password */}
-          <View style={styles.inputGroup}>
-            <Text style={styles.inputLabel}>Password *</Text>
-            <View style={styles.inputWrapper}>
-              <Ionicons name="lock-closed-outline" size={20} color={COLORS.gray} />
-              <TextInput
-                style={styles.input}
-                value={formData.password}
-                onChangeText={(v) => updateField('password', v)}
-                placeholder="Create a password"
-                placeholderTextColor={COLORS.gray}
-                secureTextEntry={!showPassword}
-              />
-              <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
-                <Ionicons
-                  name={showPassword ? 'eye-off-outline' : 'eye-outline'}
-                  size={20}
-                  color={COLORS.gray}
-                />
+          <Field
+            label="Password"
+            value={formData.password}
+            onChange={v => update('password', v)}
+            placeholder="Create a password"
+            secure
+            showPw={showPassword}
+            extra={
+              <TouchableOpacity onPress={() => setShowPassword(!showPassword)} style={styles.eyeBtn}>
+                <Ionicons name={showPassword ? 'eye-off-outline' : 'eye-outline'} size={20} color="#AAA" />
               </TouchableOpacity>
-            </View>
-          </View>
+            }
+          />
+          <Field label="Confirm Password" value={formData.confirmPassword} onChange={v => update('confirmPassword', v)} placeholder="Repeat your password" secure showPw={showPassword} />
 
-          {/* Confirm Password */}
-          <View style={styles.inputGroup}>
-            <Text style={styles.inputLabel}>Confirm Password *</Text>
-            <View style={styles.inputWrapper}>
-              <Ionicons name="lock-closed-outline" size={20} color={COLORS.gray} />
-              <TextInput
-                style={styles.input}
-                value={formData.confirmPassword}
-                onChangeText={(v) => updateField('confirmPassword', v)}
-                placeholder="Confirm your password"
-                placeholderTextColor={COLORS.gray}
-                secureTextEntry={!showConfirmPassword}
-              />
-              <TouchableOpacity onPress={() => setShowConfirmPassword(!showConfirmPassword)}>
-                <Ionicons
-                  name={showConfirmPassword ? 'eye-off-outline' : 'eye-outline'}
-                  size={20}
-                  color={COLORS.gray}
-                />
-              </TouchableOpacity>
-            </View>
-          </View>
-
-          {/* Terms */}
-          <Text style={styles.termsText}>
-            By creating an account, you agree to our{' '}
-            <Text style={styles.termsLink}>Terms of Service</Text> and{' '}
-            <Text style={styles.termsLink}>Privacy Policy</Text>
+          <Text style={styles.terms}>
+            By creating an account, you agree to our <Text style={styles.termsLink}>Terms</Text> and <Text style={styles.termsLink}>Privacy Policy</Text>
           </Text>
 
-          {/* Register Button */}
           <TouchableOpacity
-            style={[styles.registerBtn, loading && styles.registerBtnDisabled]}
+            style={[styles.signupBtn, loading && { opacity: 0.7 }]}
             onPress={handleRegister}
             disabled={loading}
+            activeOpacity={0.85}
           >
-            {loading ? (
-              <ActivityIndicator color={COLORS.white} />
-            ) : (
-              <>
-                <Text style={styles.registerBtnText}>Create Account</Text>
-                <Ionicons name="arrow-forward" size={20} color={COLORS.white} />
-              </>
-            )}
+            {loading
+              ? <ActivityIndicator color="#fff" />
+              : <Text style={styles.signupBtnText}>Sign Up</Text>}
           </TouchableOpacity>
-        </View>
 
-        <View style={styles.loginPromptForm}>
-          <Text style={styles.loginPromptText}>Already have an account? </Text>
-          <TouchableOpacity onPress={() => navigation.navigate('Login')}>
-            <Text style={styles.loginLink}>Sign In</Text>
+          {/* Social */}
+          <View style={styles.dividerRow}>
+            <View style={styles.divLine} />
+            <Text style={styles.divText}>Or sign up with Facebook</Text>
+            <View style={styles.divLine} />
+          </View>
+
+          <TouchableOpacity style={styles.facebookBtn} activeOpacity={0.85}>
+            <Ionicons name="logo-facebook" size={20} color="#fff" />
+            <Text style={styles.facebookBtnText}>Sign Up with Facebook</Text>
           </TouchableOpacity>
-        </View>
+
+          <View style={styles.loginRow}>
+            <Text style={styles.loginText}>Already have an account? </Text>
+            <TouchableOpacity onPress={() => navigation.navigate('Login')}>
+              <Text style={styles.loginLink}>Sign In</Text>
+            </TouchableOpacity>
+          </View>
+        </Animated.View>
       </ScrollView>
     </KeyboardAvoidingView>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: COLORS.cream,
-  },
-  backButton: {
-    position: 'absolute',
-    top: 60,
-    left: SIZES.padding,
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: COLORS.white,
-    justifyContent: 'center',
-    alignItems: 'center',
-    zIndex: 10,
-    ...SHADOWS.light,
-  },
-  brandSection: {
-    alignItems: 'center',
-    paddingTop: 120,
-    marginBottom: 40,
-  },
-  brandName: {
-    fontSize: 32,
-    fontWeight: '300',
-    color: COLORS.black,
-    letterSpacing: 6,
-  },
-  brandAI: {
-    fontSize: 20,
-    fontWeight: '500',
-    color: COLORS.gold,
-    letterSpacing: 4,
-    marginTop: 4,
-  },
-  brandDivider: {
+  container: { flex: 1, backgroundColor: '#fff' },
+  scroll: { flexGrow: 1, paddingBottom: 40 },
+  backBtn: {
+    marginTop: 58,
+    marginLeft: SIZES.padding,
     width: 40,
-    height: 1,
-    backgroundColor: COLORS.gold,
-    marginTop: 20,
+    height: 40,
+    justifyContent: 'center',
   },
-  roleSection: {
-    paddingHorizontal: SIZES.padding,
-  },
-  selectTitle: {
-    fontSize: 28,
-    fontWeight: '500',
-    color: COLORS.black,
-    marginBottom: 8,
-  },
-  selectSubtitle: {
-    fontSize: 15,
-    color: COLORS.gray,
+  inner: { paddingHorizontal: SIZES.padding, paddingTop: 24 },
+  title: { fontSize: 32, fontWeight: '700', color: '#1A1A1A', lineHeight: 40, marginBottom: 28 },
+  roleTabs: {
+    flexDirection: 'row',
+    backgroundColor: '#F5F0EB',
+    borderRadius: 12,
+    padding: 4,
     marginBottom: 32,
   },
-  roleCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: 20,
-    backgroundColor: COLORS.white,
-    borderRadius: SIZES.radius,
-    marginBottom: 16,
-    ...SHADOWS.light,
+  roleTab: { flex: 1, paddingVertical: 10, alignItems: 'center', borderRadius: 10 },
+  roleTabActive: {
+    backgroundColor: '#fff',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.08,
+    shadowRadius: 3,
+    elevation: 2,
   },
-  roleIcon: {
-    width: 56,
+  roleTabText: { fontSize: 14, color: '#999', fontWeight: '500' },
+  roleTabTextActive: { color: '#1A1A1A', fontWeight: '700' },
+  field: { marginBottom: 24 },
+  label: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#888',
+    textTransform: 'uppercase',
+    letterSpacing: 0.6,
+    marginBottom: 8,
+  },
+  pwRow: { flexDirection: 'row', alignItems: 'center' },
+  eyeBtn: { paddingLeft: 12, paddingVertical: 8 },
+  input: { fontSize: 16, color: '#1A1A1A', paddingVertical: 8 },
+  inputLine: { height: 1, backgroundColor: '#E8E0D8', marginTop: 4 },
+  terms: { fontSize: 13, color: '#888', lineHeight: 20, marginBottom: 24 },
+  termsLink: { color: COLORS.gold, fontWeight: '500' },
+  signupBtn: {
     height: 56,
+    backgroundColor: '#1A1A1A',
     borderRadius: 28,
-    backgroundColor: COLORS.beige,
+    alignItems: 'center',
     justifyContent: 'center',
-    alignItems: 'center',
+    marginBottom: 28,
   },
-  roleInfo: {
-    flex: 1,
-    marginLeft: 16,
-  },
-  roleTitle: {
-    fontSize: 17,
-    fontWeight: '500',
-    color: COLORS.black,
-  },
-  roleDesc: {
-    fontSize: 13,
-    color: COLORS.gray,
-    marginTop: 2,
-  },
-  loginPrompt: {
-    position: 'absolute',
-    bottom: 50,
-    flexDirection: 'row',
-    alignSelf: 'center',
-  },
-  loginPromptText: {
-    fontSize: 14,
-    color: COLORS.gray,
-  },
-  loginLink: {
-    fontSize: 14,
-    color: COLORS.gold,
-    fontWeight: '600',
-  },
-  scrollView: {
-    flex: 1,
-  },
-  scrollContent: {
-    paddingTop: 120,
-    paddingHorizontal: SIZES.padding,
-    paddingBottom: 40,
-  },
-  formHeader: {
-    marginBottom: 32,
-  },
-  brandNameSmall: {
-    fontSize: 14,
-    fontWeight: '500',
-    color: COLORS.gold,
-    letterSpacing: 3,
-    marginBottom: 16,
-  },
-  formTitle: {
-    fontSize: 26,
-    fontWeight: '500',
-    color: COLORS.black,
-    marginBottom: 8,
-  },
-  formSubtitle: {
-    fontSize: 15,
-    color: COLORS.gray,
-  },
-  form: {
-    marginBottom: 24,
-  },
-  inputGroup: {
-    marginBottom: 20,
-  },
-  inputLabel: {
-    fontSize: 13,
-    fontWeight: '500',
-    color: COLORS.black,
-    marginBottom: 8,
-  },
-  inputWrapper: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: COLORS.white,
-    borderRadius: SIZES.radius,
-    paddingHorizontal: 16,
-    height: 56,
-    borderWidth: 1,
-    borderColor: COLORS.beigeDark,
-  },
-  input: {
-    flex: 1,
-    fontSize: 15,
-    color: COLORS.black,
-    marginLeft: 12,
-  },
-  termsText: {
-    fontSize: 13,
-    color: COLORS.gray,
-    lineHeight: 20,
-    marginBottom: 24,
-  },
-  termsLink: {
-    color: COLORS.gold,
-    fontWeight: '500',
-  },
-  registerBtn: {
+  signupBtnText: { fontSize: 16, fontWeight: '700', color: '#fff' },
+  dividerRow: { flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 16 },
+  divLine: { flex: 1, height: 1, backgroundColor: '#EEE8E0' },
+  divText: { fontSize: 12, color: '#AAA', textAlign: 'center', flexShrink: 1 },
+  facebookBtn: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    height: 56,
-    backgroundColor: COLORS.black,
-    borderRadius: SIZES.radius,
+    height: 52,
+    backgroundColor: '#1877F2',
+    borderRadius: 28,
     gap: 10,
+    marginBottom: 28,
   },
-  registerBtnDisabled: {
-    opacity: 0.7,
-  },
-  registerBtnText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: COLORS.white,
-  },
-  loginPromptForm: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    marginTop: 16,
-  },
+  facebookBtnText: { fontSize: 15, fontWeight: '600', color: '#fff' },
+  loginRow: { flexDirection: 'row', justifyContent: 'center' },
+  loginText: { fontSize: 14, color: '#888' },
+  loginLink: { fontSize: 14, color: '#1A1A1A', fontWeight: '700' },
 });
 
 export default RegisterScreen;
