@@ -5,14 +5,13 @@ import {
   StyleSheet,
   ScrollView,
   TouchableOpacity,
-  Image,
   Linking,
   Alert,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import { useScrollToTop } from '@react-navigation/native';
-import { COLORS, SIZES, SHADOWS } from '../constants/theme';
+import { COLORS, SIZES } from '../constants/theme';
 import { useApp } from '../context/AppContext';
 
 const ProfileScreen = ({ navigation }) => {
@@ -33,7 +32,6 @@ const ProfileScreen = ({ navigation }) => {
     );
   };
 
-  // Assigned Sales Advisor for this customer
   const myAdvisor = {
     id: 1,
     name: 'Isabelle Moreau',
@@ -48,14 +46,7 @@ const ProfileScreen = ({ navigation }) => {
   };
 
   const handleCall = () => {
-    Alert.alert(
-      'Call Advisor',
-      `Call ${myAdvisor.name}?`,
-      [
-        { text: 'Cancel', style: 'cancel' },
-        { text: 'Call', onPress: () => Linking.openURL(`tel:${myAdvisor.phone}`) },
-      ]
-    );
+    // Feature not implemented yet
   };
 
   const handleEmail = () => {
@@ -66,44 +57,44 @@ const ProfileScreen = ({ navigation }) => {
     {
       icon: 'bag-outline',
       label: t('profile.myOrders'),
-      value: `${orders.length}`,
       onPress: () => {},
-    },
-    {
-      icon: 'heart-outline',
-      label: t('common.wishlist'),
-      value: `${wishlist.length}`,
-      onPress: () => navigation.navigate('Wishlist'),
     },
     {
       icon: 'location-outline',
       label: t('profile.myAddresses'),
-      value: '2',
+      onPress: () => {},
+    },
+    {
+      icon: 'card-outline',
+      label: 'Payment Methods',
+      onPress: () => {},
+    },
+    {
+      icon: 'notifications-outline',
+      label: t('profile.notifications'),
       onPress: () => {},
     },
     {
       icon: 'globe-outline',
       label: t('profile.language'),
-      value: language === 'tr' ? 'Türkçe' : 'English',
       onPress: handleLanguageChange,
-    },
-    {
-      icon: 'notifications-outline',
-      label: t('profile.notifications'),
-      value: 'On',
-      onPress: () => {},
-    },
-    {
-      icon: 'settings-outline',
-      label: t('profile.settings'),
-      onPress: () => navigation.navigate('Settings'),
     },
     {
       icon: 'help-circle-outline',
       label: t('profile.help'),
       onPress: () => {},
     },
+    {
+      icon: 'information-circle-outline',
+      label: 'About',
+      onPress: () => {},
+    },
   ];
+
+  const initials = user.name
+    .split(' ')
+    .map((n) => n[0])
+    .join('');
 
   return (
     <View style={styles.container}>
@@ -111,10 +102,10 @@ const ProfileScreen = ({ navigation }) => {
       <View style={styles.header}>
         <Text style={styles.headerTitle}>{t('common.profile')}</Text>
         <TouchableOpacity
-          style={styles.iconBtn}
+          style={styles.cartBtn}
           onPress={() => navigation.navigate('Cart')}
         >
-          <Ionicons name="bag-outline" size={24} color={COLORS.black} />
+          <Ionicons name="bag-outline" size={22} color="#1A1A1A" />
           {getCartCount() > 0 && (
             <View style={styles.cartBadge}>
               <Text style={styles.cartBadgeText}>{getCartCount()}</Text>
@@ -124,198 +115,104 @@ const ProfileScreen = ({ navigation }) => {
       </View>
 
       <ScrollView ref={scrollRef} showsVerticalScrollIndicator={false}>
-        {/* Profile Card */}
-        <View style={styles.profileCard}>
-          <View style={styles.avatar}>
-            <Text style={styles.avatarText}>
-              {user.name.split(' ').map((n) => n[0]).join('')}
-            </Text>
-          </View>
-          <View style={styles.profileInfo}>
-            <Text style={styles.profileName}>{user.name}</Text>
-            <Text style={styles.profileEmail}>{user.email}</Text>
-            <View style={styles.tierBadge}>
-              <Ionicons name="diamond" size={14} color={COLORS.gold} />
-              <Text style={styles.tierText}>{user.tier} Member</Text>
+        {/* Top user area */}
+        <View style={styles.topArea}>
+          {/* Avatar + name + tier */}
+          <View style={styles.userRow}>
+            <View style={styles.avatar}>
+              <Text style={styles.avatarText}>{initials}</Text>
+            </View>
+            <View style={styles.userInfo}>
+              <Text style={styles.userName}>{user.name}</Text>
+              <Text style={styles.userEmail}>{user.email}</Text>
+              <View style={styles.tierBadge}>
+                <Text style={styles.tierText}>{user.tier} Member</Text>
+              </View>
             </View>
           </View>
-          <TouchableOpacity style={styles.editBtn}>
-            <Ionicons name="create-outline" size={20} color={COLORS.gold} />
-          </TouchableOpacity>
-        </View>
 
-        {/* Stats */}
-        <View style={styles.statsRow}>
-          <View style={styles.statItem}>
-            <Text style={styles.statValue}>{user.totalSpent.toLocaleString()}</Text>
-            <Text style={styles.statLabel}>Total Spent</Text>
-          </View>
-          <View style={styles.statDivider} />
-          <View style={styles.statItem}>
-            <Text style={styles.statValue}>{user.loyaltyPoints.toLocaleString()}</Text>
-            <Text style={styles.statLabel}>Points</Text>
-          </View>
-          <View style={styles.statDivider} />
-          <View style={styles.statItem}>
-            <Text style={styles.statValue}>{orders.length}</Text>
-            <Text style={styles.statLabel}>Orders</Text>
+          {/* Stats row */}
+          <View style={styles.statsRow}>
+            <View style={styles.statItem}>
+              <Text style={styles.statValue}>{orders.length}</Text>
+              <Text style={styles.statLabel}>Orders</Text>
+            </View>
+            <View style={styles.statDivider} />
+            <View style={styles.statItem}>
+              <Text style={styles.statValue}>{wishlist.length}</Text>
+              <Text style={styles.statLabel}>Wishlist</Text>
+            </View>
+            <View style={styles.statDivider} />
+            <View style={styles.statItem}>
+              <Text style={styles.statValue}>${user.totalSpent.toLocaleString()}</Text>
+              <Text style={styles.statLabel}>Spent</Text>
+            </View>
           </View>
         </View>
 
-        {/* My Sales Advisor */}
-        <View style={styles.advisorSection}>
-          <Text style={styles.advisorSectionTitle}>Your Personal Advisor</Text>
+        {/* Thin divider */}
+        <View style={styles.divider} />
+
+        {/* My Advisor card */}
+        <View style={styles.section}>
+          <Text style={styles.sectionLabel}>My Advisor</Text>
           <View style={styles.advisorCard}>
-            <View style={styles.advisorHeader}>
-              <View style={styles.advisorAvatar}>
-                <Text style={styles.advisorAvatarText}>{myAdvisor.avatar}</Text>
-              </View>
-              <View style={styles.advisorInfo}>
-                <Text style={styles.advisorName}>{myAdvisor.name}</Text>
-                <Text style={styles.advisorRole}>{myAdvisor.role}</Text>
-                <View style={styles.advisorStore}>
-                  <Ionicons name="location" size={12} color={COLORS.gray} />
-                  <Text style={styles.advisorStoreText}>{myAdvisor.store}</Text>
-                </View>
-              </View>
-              <View style={styles.advisorStatus}>
-                <View style={styles.availabilityDot} />
-                <Text style={styles.availabilityText}>Online</Text>
-              </View>
+            <View style={styles.advisorAvatar}>
+              <Text style={styles.advisorAvatarText}>{myAdvisor.avatar}</Text>
             </View>
-
-            <View style={styles.advisorSpecialties}>
-              {myAdvisor.specialties.map((specialty, idx) => (
-                <View key={idx} style={styles.specialtyTag}>
-                  <Text style={styles.specialtyText}>{specialty}</Text>
-                </View>
-              ))}
-              <View style={styles.ratingTag}>
-                <Ionicons name="star" size={12} color={COLORS.gold} />
-                <Text style={styles.ratingText}>{myAdvisor.rating}</Text>
-              </View>
+            <View style={styles.advisorInfo}>
+              <Text style={styles.advisorName}>{myAdvisor.name}</Text>
+              <Text style={styles.advisorRole}>{myAdvisor.role}</Text>
             </View>
-
             <View style={styles.advisorActions}>
+              <TouchableOpacity style={styles.advisorActionBtn} onPress={handleCall}>
+                <Ionicons name="call-outline" size={16} color="#1A1A1A" />
+              </TouchableOpacity>
               <TouchableOpacity
                 style={styles.advisorActionBtn}
                 onPress={() => navigation.navigate('Chat', { advisor: myAdvisor })}
               >
-                <Ionicons name="chatbubble-outline" size={20} color={COLORS.white} />
-                <Text style={styles.advisorActionText}>Message</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={[styles.advisorActionBtn, styles.advisorActionBtnOutline]}
-                onPress={handleCall}
-              >
-                <Ionicons name="call-outline" size={20} color={COLORS.gold} />
-                <Text style={[styles.advisorActionText, styles.advisorActionTextOutline]}>Call</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={[styles.advisorActionBtn, styles.advisorActionBtnOutline]}
-                onPress={handleEmail}
-              >
-                <Ionicons name="mail-outline" size={20} color={COLORS.gold} />
-                <Text style={[styles.advisorActionText, styles.advisorActionTextOutline]}>Email</Text>
+                <Ionicons name="chatbubble-outline" size={16} color="#1A1A1A" />
               </TouchableOpacity>
             </View>
           </View>
         </View>
 
-        {/* Menu Items */}
+        {/* Thin divider */}
+        <View style={styles.divider} />
+
+        {/* Menu items */}
         <View style={styles.menuSection}>
           {menuItems.map((item, index) => (
             <TouchableOpacity
               key={index}
-              style={styles.menuItem}
+              style={[
+                styles.menuItem,
+                index < menuItems.length - 1 && styles.menuItemBorder,
+              ]}
               onPress={item.onPress}
             >
-              <View style={styles.menuIcon}>
-                <Ionicons name={item.icon} size={22} color={COLORS.gold} />
+              <View style={styles.menuIconCircle}>
+                <Ionicons name={item.icon} size={18} color="#1A1A1A" />
               </View>
-              <View style={styles.menuContent}>
-                <Text style={styles.menuLabel}>{item.label}</Text>
-                {item.value && (
-                  <Text style={styles.menuValue}>{item.value}</Text>
-                )}
-              </View>
-              <Ionicons name="chevron-forward" size={20} color={COLORS.gray} />
+              <Text style={styles.menuLabel}>{item.label}</Text>
+              <Ionicons name="chevron-forward" size={16} color="#AAAAAA" />
             </TouchableOpacity>
           ))}
         </View>
 
-        {/* Recent Orders */}
-        {orders.length > 0 && (
-          <View style={styles.ordersSection}>
-            <View style={styles.sectionHeader}>
-              <Text style={styles.sectionTitle}>Recent Orders</Text>
-              <TouchableOpacity>
-                <Text style={styles.seeAll}>See All</Text>
-              </TouchableOpacity>
-            </View>
-            {orders.slice(0, 2).map((order) => (
-              <TouchableOpacity key={order.id} style={styles.orderCard}>
-                <View style={styles.orderHeader}>
-                  <Text style={styles.orderNumber}>{order.orderNumber}</Text>
-                  <View style={[
-                    styles.statusBadge,
-                    order.status === 'delivered' && styles.statusDelivered,
-                    order.status === 'shipped' && styles.statusShipped,
-                    order.status === 'processing' && styles.statusProcessing,
-                  ]}>
-                    <Text style={[
-                      styles.statusText,
-                      order.status === 'delivered' && styles.statusTextDelivered,
-                    ]}>
-                      {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
-                    </Text>
-                  </View>
-                </View>
-                <Text style={styles.orderDate}>
-                  {new Date(order.date).toLocaleDateString('en-US', {
-                    month: 'short',
-                    day: 'numeric',
-                    year: 'numeric',
-                  })}
-                </Text>
-                <View style={styles.orderItems}>
-                  {order.items.slice(0, 3).map((item, idx) => (
-                    <Image
-                      key={idx}
-                      source={typeof item.image === 'string' ? { uri: item.image } : item.image}
-                      style={styles.orderItemImage}
-                    />
-                  ))}
-                  {order.items.length > 3 && (
-                    <View style={styles.moreItems}>
-                      <Text style={styles.moreItemsText}>+{order.items.length - 3}</Text>
-                    </View>
-                  )}
-                </View>
-                <View style={styles.orderFooter}>
-                  <Text style={styles.orderTotal}>
-                    ${order.total.toLocaleString()}
-                  </Text>
-                  <Text style={styles.trackingText}>
-                    Track: {order.trackingNumber}
-                  </Text>
-                </View>
-              </TouchableOpacity>
-            ))}
-          </View>
-        )}
-
-        {/* Logout Button */}
-        <TouchableOpacity
-          style={styles.logoutBtn}
-          onPress={() => {
-            logout();
-            navigation.replace('Landing');
-          }}
-        >
-          <Ionicons name="log-out-outline" size={20} color={COLORS.error} />
-          <Text style={styles.logoutText}>Log Out</Text>
-        </TouchableOpacity>
+        {/* Sign Out */}
+        <View style={styles.signOutWrapper}>
+          <TouchableOpacity
+            style={styles.signOutBtn}
+            onPress={() => {
+              logout();
+              navigation.replace('Landing');
+            }}
+          >
+            <Text style={styles.signOutText}>Sign Out</Text>
+          </TouchableOpacity>
+        </View>
 
         <View style={{ height: 100 }} />
       </ScrollView>
@@ -326,420 +223,248 @@ const ProfileScreen = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.cream,
+    backgroundColor: '#fff',
   },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: SIZES.padding,
+    paddingHorizontal: 20,
     paddingTop: 60,
     paddingBottom: 16,
+    backgroundColor: '#fff',
   },
   headerTitle: {
-    fontSize: 28,
-    fontWeight: '500',
-    color: COLORS.black,
+    fontSize: 24,
+    fontWeight: '700',
+    color: '#1A1A1A',
+    letterSpacing: 0.3,
   },
-  iconBtn: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: COLORS.white,
+  cartBtn: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
     justifyContent: 'center',
     alignItems: 'center',
-    ...SHADOWS.light,
   },
   cartBadge: {
     position: 'absolute',
-    top: -4,
-    right: -4,
-    backgroundColor: COLORS.gold,
-    borderRadius: 10,
-    width: 20,
-    height: 20,
+    top: 2,
+    right: 2,
+    backgroundColor: '#1A1A1A',
+    borderRadius: 8,
+    width: 16,
+    height: 16,
     justifyContent: 'center',
     alignItems: 'center',
   },
   cartBadgeText: {
-    fontSize: 11,
-    fontWeight: '600',
-    color: COLORS.white,
+    fontSize: 10,
+    fontWeight: '700',
+    color: '#fff',
   },
-  profileCard: {
+
+  // Top area
+  topArea: {
+    paddingHorizontal: 20,
+    paddingBottom: 24,
+    paddingTop: 8,
+    backgroundColor: '#fff',
+  },
+  userRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    margin: SIZES.padding,
-    padding: 20,
-    backgroundColor: COLORS.white,
-    borderRadius: SIZES.radius,
-    ...SHADOWS.light,
+    marginBottom: 24,
   },
   avatar: {
     width: 64,
     height: 64,
     borderRadius: 32,
-    backgroundColor: COLORS.gold,
+    backgroundColor: '#F5F0E8',
     justifyContent: 'center',
     alignItems: 'center',
   },
   avatarText: {
-    fontSize: 22,
-    fontWeight: '600',
-    color: COLORS.white,
+    fontSize: 20,
+    fontWeight: '700',
+    color: '#1A1A1A',
+    letterSpacing: 1,
   },
-  profileInfo: {
+  userInfo: {
     flex: 1,
     marginLeft: 16,
   },
-  profileName: {
-    fontSize: 18,
-    fontWeight: '500',
-    color: COLORS.black,
+  userName: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: '#1A1A1A',
+    letterSpacing: 0.2,
   },
-  profileEmail: {
+  userEmail: {
     fontSize: 13,
-    color: COLORS.gray,
+    color: '#888',
     marginTop: 2,
   },
   tierBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    alignSelf: 'flex-start',
     marginTop: 8,
-    gap: 6,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    backgroundColor: '#C9A84C',
+    borderRadius: 20,
   },
   tierText: {
-    fontSize: 12,
-    fontWeight: '500',
-    color: COLORS.gold,
+    fontSize: 11,
+    fontWeight: '600',
+    color: '#fff',
+    letterSpacing: 0.5,
   },
-  editBtn: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: COLORS.beige,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
+
+  // Stats
   statsRow: {
     flexDirection: 'row',
-    marginHorizontal: SIZES.padding,
-    marginBottom: 16,
-    padding: 20,
-    backgroundColor: COLORS.white,
-    borderRadius: SIZES.radius,
-    ...SHADOWS.light,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#F0EDE8',
+    borderRadius: 12,
+    paddingVertical: 16,
   },
   statItem: {
     flex: 1,
     alignItems: 'center',
   },
   statValue: {
-    fontSize: 20,
-    fontWeight: '600',
-    color: COLORS.black,
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#1A1A1A',
   },
   statLabel: {
-    fontSize: 12,
-    color: COLORS.gray,
+    fontSize: 11,
+    color: '#999',
     marginTop: 4,
+    letterSpacing: 0.3,
   },
   statDivider: {
     width: 1,
-    height: '100%',
-    backgroundColor: COLORS.beigeDark,
+    height: 32,
+    backgroundColor: '#EBEBEB',
   },
-  advisorSection: {
-    margin: SIZES.padding,
-    marginBottom: 0,
+
+  // Divider
+  divider: {
+    height: 1,
+    backgroundColor: '#F2F2F2',
+    marginHorizontal: 0,
   },
-  advisorSectionTitle: {
-    fontSize: 18,
-    fontWeight: '500',
-    color: COLORS.black,
-    marginBottom: 12,
+
+  // Section wrapper
+  section: {
+    paddingHorizontal: 20,
+    paddingVertical: 20,
   },
+  sectionLabel: {
+    fontSize: 11,
+    fontWeight: '600',
+    color: '#999',
+    letterSpacing: 1,
+    textTransform: 'uppercase',
+    marginBottom: 14,
+  },
+
+  // Advisor card
   advisorCard: {
-    backgroundColor: COLORS.white,
-    borderRadius: SIZES.radius,
-    padding: 16,
-    borderWidth: 1,
-    borderColor: COLORS.goldLight,
-    ...SHADOWS.light,
-  },
-  advisorHeader: {
     flexDirection: 'row',
     alignItems: 'center',
   },
   advisorAvatar: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    backgroundColor: COLORS.gold,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: '#F5F0E8',
     justifyContent: 'center',
     alignItems: 'center',
   },
   advisorAvatarText: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: COLORS.white,
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#1A1A1A',
   },
   advisorInfo: {
     flex: 1,
-    marginLeft: 14,
+    marginLeft: 12,
   },
   advisorName: {
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: '600',
-    color: COLORS.black,
+    color: '#1A1A1A',
   },
   advisorRole: {
-    fontSize: 13,
-    color: COLORS.gray,
-    marginTop: 2,
-  },
-  advisorStore: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginTop: 4,
-    gap: 4,
-  },
-  advisorStoreText: {
     fontSize: 12,
-    color: COLORS.gray,
-  },
-  advisorStatus: {
-    alignItems: 'center',
-  },
-  availabilityDot: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-    backgroundColor: COLORS.success,
-    marginBottom: 4,
-  },
-  availabilityText: {
-    fontSize: 11,
-    color: COLORS.success,
-    fontWeight: '500',
-  },
-  advisorSpecialties: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    marginTop: 14,
-    gap: 8,
-  },
-  specialtyTag: {
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-    backgroundColor: COLORS.beige,
-    borderRadius: 12,
-  },
-  specialtyText: {
-    fontSize: 11,
-    color: COLORS.textSecondary,
-    fontWeight: '500',
-  },
-  ratingTag: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-    backgroundColor: COLORS.beige,
-    borderRadius: 12,
-    gap: 4,
-  },
-  ratingText: {
-    fontSize: 11,
-    color: COLORS.gold,
-    fontWeight: '600',
+    color: '#888',
+    marginTop: 2,
   },
   advisorActions: {
     flexDirection: 'row',
-    marginTop: 16,
-    gap: 10,
+    gap: 8,
   },
   advisorActionBtn: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: '#F5F0E8',
     justifyContent: 'center',
-    paddingVertical: 12,
-    backgroundColor: COLORS.black,
-    borderRadius: SIZES.radiusSm,
-    gap: 6,
+    alignItems: 'center',
   },
-  advisorActionBtnOutline: {
-    backgroundColor: COLORS.white,
-    borderWidth: 1,
-    borderColor: COLORS.goldLight,
-  },
-  advisorActionText: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: COLORS.white,
-  },
-  advisorActionTextOutline: {
-    color: COLORS.gold,
-  },
+
+  // Menu
   menuSection: {
-    margin: SIZES.padding,
-    marginTop: 0,
-    backgroundColor: COLORS.white,
-    borderRadius: SIZES.radius,
-    ...SHADOWS.light,
+    paddingHorizontal: 20,
+    paddingVertical: 8,
   },
   menuItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: COLORS.beigeDark,
+    paddingVertical: 14,
   },
-  menuIcon: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: COLORS.beige,
+  menuItemBorder: {
+    borderBottomWidth: 1,
+    borderBottomColor: '#F5F5F5',
+  },
+  menuIconCircle: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: '#F5F0E8',
     justifyContent: 'center',
     alignItems: 'center',
-  },
-  menuContent: {
-    flex: 1,
-    marginLeft: 14,
+    marginRight: 14,
   },
   menuLabel: {
+    flex: 1,
     fontSize: 15,
     fontWeight: '500',
-    color: COLORS.black,
+    color: '#1A1A1A',
   },
-  menuValue: {
-    fontSize: 13,
-    color: COLORS.gray,
-    marginTop: 2,
+
+  // Sign out
+  signOutWrapper: {
+    paddingHorizontal: 20,
+    paddingTop: 24,
+    paddingBottom: 8,
   },
-  ordersSection: {
-    margin: SIZES.padding,
-    marginTop: 0,
-  },
-  sectionHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+  signOutBtn: {
+    borderWidth: 1.5,
+    borderColor: '#1A1A1A',
+    borderRadius: 30,
+    paddingVertical: 14,
     alignItems: 'center',
-    marginBottom: 12,
+    backgroundColor: '#fff',
   },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: '500',
-    color: COLORS.black,
-  },
-  seeAll: {
-    fontSize: 13,
-    color: COLORS.gold,
-    fontWeight: '500',
-  },
-  orderCard: {
-    padding: 16,
-    backgroundColor: COLORS.white,
-    borderRadius: SIZES.radius,
-    marginBottom: 12,
-    ...SHADOWS.light,
-  },
-  orderHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  orderNumber: {
+  signOutText: {
     fontSize: 14,
     fontWeight: '600',
-    color: COLORS.black,
-  },
-  statusBadge: {
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 4,
-    backgroundColor: COLORS.beige,
-  },
-  statusDelivered: {
-    backgroundColor: '#E8F5E9',
-  },
-  statusShipped: {
-    backgroundColor: '#E3F2FD',
-  },
-  statusProcessing: {
-    backgroundColor: '#FFF8E1',
-  },
-  statusText: {
-    fontSize: 11,
-    fontWeight: '600',
-    color: COLORS.gray,
-  },
-  statusTextDelivered: {
-    color: COLORS.success,
-  },
-  orderDate: {
-    fontSize: 13,
-    color: COLORS.gray,
-    marginTop: 4,
-  },
-  orderItems: {
-    flexDirection: 'row',
-    marginTop: 12,
-    gap: 8,
-  },
-  orderItemImage: {
-    width: 48,
-    height: 48,
-    borderRadius: 8,
-    backgroundColor: COLORS.beige,
-  },
-  moreItems: {
-    width: 48,
-    height: 48,
-    borderRadius: 8,
-    backgroundColor: COLORS.beige,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  moreItemsText: {
-    fontSize: 12,
-    fontWeight: '500',
-    color: COLORS.gray,
-  },
-  orderFooter: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginTop: 12,
-    paddingTop: 12,
-    borderTopWidth: 1,
-    borderTopColor: COLORS.beigeDark,
-  },
-  orderTotal: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: COLORS.gold,
-  },
-  trackingText: {
-    fontSize: 12,
-    color: COLORS.gray,
-  },
-  logoutBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    margin: SIZES.padding,
-    padding: 16,
-    backgroundColor: COLORS.white,
-    borderRadius: SIZES.radius,
-    gap: 10,
-    ...SHADOWS.light,
-  },
-  logoutText: {
-    fontSize: 15,
-    fontWeight: '500',
-    color: COLORS.error,
+    color: '#1A1A1A',
+    letterSpacing: 0.5,
   },
 });
 

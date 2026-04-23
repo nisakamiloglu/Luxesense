@@ -1,85 +1,72 @@
-import React, { useEffect } from 'react';
-import { View, Text, StyleSheet, Animated } from 'react-native';
-import { COLORS, SIZES } from '../constants/theme';
+import React, { useEffect, useRef } from 'react';
+import { View, Text, StyleSheet, Animated, ImageBackground } from 'react-native';
+import { COLORS } from '../constants/theme';
 
 const SplashScreen = ({ navigation }) => {
-  const fadeAnim = new Animated.Value(0);
-  const scaleAnim = new Animated.Value(0.9);
+  const fade = useRef(new Animated.Value(0)).current;
+  const slide = useRef(new Animated.Value(30)).current;
 
   useEffect(() => {
     Animated.parallel([
-      Animated.timing(fadeAnim, {
-        toValue: 1,
-        duration: 1000,
-        useNativeDriver: true,
-      }),
-      Animated.spring(scaleAnim, {
-        toValue: 1,
-        tension: 20,
-        friction: 7,
-        useNativeDriver: true,
-      }),
+      Animated.timing(fade, { toValue: 1, duration: 1200, useNativeDriver: true }),
+      Animated.timing(slide, { toValue: 0, duration: 1000, useNativeDriver: true }),
     ]).start();
-
-    const timer = setTimeout(() => {
-      navigation.replace('Welcome');
-    }, 2500);
-
+    const timer = setTimeout(() => navigation.replace('Welcome'), 2800);
     return () => clearTimeout(timer);
   }, []);
 
   return (
-    <View style={styles.container}>
-      <Animated.View style={[
-        styles.content,
-        {
-          opacity: fadeAnim,
-          transform: [{ scale: scaleAnim }]
-        }
-      ]}>
+    <ImageBackground
+      source={require('../images/Banner/banner6.webp')}
+      style={styles.container}
+      resizeMode="cover"
+    >
+      <View style={styles.overlay} />
+      <Animated.View style={[styles.content, { opacity: fade, transform: [{ translateY: slide }] }]}>
         <Text style={styles.brand}>LUXESENSE</Text>
-        <Text style={styles.brandAI}>AI</Text>
-        <View style={styles.divider} />
+        <Text style={styles.ai}>AI</Text>
+        <View style={styles.line} />
         <Text style={styles.tagline}>A New Way of Shopping</Text>
       </Animated.View>
-    </View>
+    </ImageBackground>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: COLORS.cream,
-    justifyContent: 'center',
-    alignItems: 'center',
+  container: { flex: 1 },
+  overlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0,0,0,0.46)',
   },
   content: {
+    flex: 1,
     alignItems: 'center',
+    justifyContent: 'center',
   },
   brand: {
-    fontSize: 42,
+    fontSize: 44,
     fontWeight: '300',
-    color: COLORS.black,
-    letterSpacing: 12,
+    color: '#fff',
+    letterSpacing: 14,
   },
-  brandAI: {
+  ai: {
     fontSize: 18,
-    fontWeight: '400',
+    fontWeight: '500',
     color: COLORS.gold,
     letterSpacing: 8,
-    marginTop: 4,
+    marginTop: 6,
   },
-  divider: {
+  line: {
     width: 40,
     height: 1,
     backgroundColor: COLORS.gold,
-    marginVertical: 24,
+    marginVertical: 28,
   },
   tagline: {
-    fontSize: 14,
+    fontSize: 13,
     fontWeight: '300',
-    color: COLORS.gray,
-    letterSpacing: 2,
+    color: 'rgba(255,255,255,0.72)',
+    letterSpacing: 3,
   },
 });
 
