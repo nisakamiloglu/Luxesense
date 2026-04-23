@@ -21,7 +21,7 @@ const ONBOARDING = [
   {
     id: 0,
     type: 'hero',
-    image: require('../images/Banner/banner1.webp'),
+    image: require('../images/Banner/banner2.webp'),
   },
   {
     id: 1,
@@ -96,12 +96,6 @@ const LandingScreen = ({ navigation }) => {
             <Text style={styles.guestBtnText}>{t('landing.browseAsGuest')}</Text>
           </TouchableOpacity>
         </Animated.View>
-        {/* Pagination dots */}
-        <View style={styles.dots}>
-          {ONBOARDING.map((_, i) => (
-            <View key={i} style={[styles.dot, i === step && styles.dotActive]} />
-          ))}
-        </View>
       </ImageBackground>
     );
   }
