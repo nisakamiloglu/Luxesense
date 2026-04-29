@@ -26,6 +26,7 @@ A full-stack luxury retail mobile application that connects high-end customers w
   <tr>
     <td align="center"><img src="assets/Screenshots/chat.png" width="160"/><br/><sub>AI Stylist Chat</sub></td>
     <td align="center"><img src="assets/Screenshots/notification.png" width="160"/><br/><sub>Notifications</sub></td>
+    <td align="center"><img src="assets/Screenshots/women.PNG" width="160"/><br/><sub>Women's Collection</sub></td>
   </tr>
 </table>
 
@@ -34,6 +35,9 @@ A full-stack luxury retail mobile application that connects high-end customers w
 <table>
   <tr>
     <td align="center"><img src="assets/Screenshots/dashboard.png" width="160"/><br/><sub>Advisor Dashboard</sub></td>
+    <td align="center"><img src="assets/Screenshots/clients.png" width="160"/><br/><sub>Client Portfolio (LIRA Scores)</sub></td>
+    <td align="center"><img src="assets/Screenshots/action.png" width="160"/><br/><sub>Activity & Tasks</sub></td>
+    <td align="center"><img src="assets/Screenshots/message.png" width="160"/><br/><sub>Messages</sub></td>
   </tr>
 </table>
 
