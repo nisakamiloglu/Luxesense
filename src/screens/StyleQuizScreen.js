@@ -1,22 +1,21 @@
 import React, { useState, useRef } from 'react';
 import {
   View, Text, StyleSheet, TouchableOpacity,
-  Animated, ScrollView, StatusBar,
+  Animated, ScrollView, StatusBar, SafeAreaView,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { COLORS, SIZES } from '../constants/theme';
 import { useApp } from '../context/AppContext';
 
-// Brand scoring by avg price point
 const BRAND_SCORES = {
-  'HERMÈS':       5,
-  'CARTIER':      5,
-  'ROLEX':        5,
-  'CHANEL':       4,
-  'DIOR':         3,
-  'LOUIS VUITTON':3,
-  'GUCCI':        2,
-  'PRADA':        2,
+  'HERMÈS':        5,
+  'CARTIER':       5,
+  'ROLEX':         5,
+  'CHANEL':        4,
+  'DIOR':          3,
+  'LOUIS VUITTON': 3,
+  'GUCCI':         2,
+  'PRADA':         2,
 };
 
 const ALL_BRANDS = Object.keys(BRAND_SCORES);
@@ -27,7 +26,7 @@ const QUESTIONS = [
     type: 'multi',
     question: 'Which brands do you shop the most?',
     subtitle: 'Select all that apply',
-    options: ALL_BRANDS.map(b => ({ key: b, label: b.charAt(0) + b.slice(1).toLowerCase().replace('È', 'è').replace('Ë', 'ë') })),
+    options: ALL_BRANDS.map(b => ({ key: b, label: b })),
   },
   {
     id: 2,
@@ -35,11 +34,11 @@ const QUESTIONS = [
     question: 'How often do you shop for luxury?',
     subtitle: 'Think about the past year',
     options: [
-      { key: 'freq_5', score: 5, label: 'Several times a year' },
-      { key: 'freq_4', score: 4, label: 'A few times a year' },
-      { key: 'freq_3', score: 3, label: 'Once or twice a year' },
-      { key: 'freq_2', score: 2, label: 'Only for special occasions' },
-      { key: 'freq_1', score: 1, label: "I'm just beginning to explore" },
+      { key: 'freq_5', score: 5, label: 'Several times a year',          hint: 'Luxury is a lifestyle' },
+      { key: 'freq_4', score: 4, label: 'A few times a year',             hint: 'Curated and intentional' },
+      { key: 'freq_3', score: 3, label: 'Once or twice a year',           hint: 'Special moments' },
+      { key: 'freq_2', score: 2, label: 'Only for special occasions',     hint: 'Milestone purchases' },
+      { key: 'freq_1', score: 1, label: "I'm just beginning to explore",  hint: 'New to luxury' },
     ],
   },
   {
@@ -48,11 +47,11 @@ const QUESTIONS = [
     question: 'How would you describe your personal style?',
     subtitle: 'Choose the one that resonates most',
     options: [
-      { key: 'style_5', score: 5, label: 'Classic and timeless' },
-      { key: 'style_4', score: 4, label: 'Modern and minimal' },
-      { key: 'style_3', score: 3, label: 'Bold and expressive' },
-      { key: 'style_2', score: 2, label: 'Effortlessly casual' },
-      { key: 'style_1', score: 1, label: 'Still discovering my aesthetic' },
+      { key: 'style_5', score: 5, label: 'Classic and timeless',           hint: 'Hermès, Cartier' },
+      { key: 'style_4', score: 4, label: 'Modern and minimal',             hint: 'Celine, Bottega' },
+      { key: 'style_3', score: 3, label: 'Bold and expressive',            hint: 'Gucci, Dior' },
+      { key: 'style_2', score: 2, label: 'Effortlessly casual',            hint: 'Off-duty chic' },
+      { key: 'style_1', score: 1, label: 'Still discovering my aesthetic', hint: 'Open to all' },
     ],
   },
   {
@@ -61,11 +60,11 @@ const QUESTIONS = [
     question: 'How often would you like to hear about new arrivals?',
     subtitle: 'We will tailor your notifications accordingly',
     options: [
-      { key: 'notif_daily',   score: 5, label: 'As soon as they drop',     notifPref: 'daily' },
-      { key: 'notif_weekly',  score: 4, label: 'A few times a week',        notifPref: 'weekly' },
-      { key: 'notif_once',    score: 3, label: 'Once a week',               notifPref: 'weekly' },
-      { key: 'notif_monthly', score: 2, label: 'Monthly',                   notifPref: 'monthly' },
-      { key: 'notif_rare',    score: 1, label: 'Only for very special pieces', notifPref: 'rarely' },
+      { key: 'notif_daily',   score: 5, label: 'As soon as they drop',        hint: 'Every day',     notifPref: 'daily' },
+      { key: 'notif_weekly',  score: 4, label: 'A few times a week',           hint: '2–3× weekly',   notifPref: 'weekly' },
+      { key: 'notif_once',    score: 3, label: 'Once a week',                  hint: 'Weekly digest', notifPref: 'weekly' },
+      { key: 'notif_monthly', score: 2, label: 'Monthly',                      hint: 'Once a month',  notifPref: 'monthly' },
+      { key: 'notif_rare',    score: 1, label: 'Only for very special pieces', hint: 'Rarely',        notifPref: 'rarely' },
     ],
   },
   {
@@ -74,11 +73,11 @@ const QUESTIONS = [
     question: "What's your typical budget for a luxury purchase?",
     subtitle: 'An honest answer helps us recommend the right pieces',
     options: [
-      { key: 'budget_5', score: 5, label: '$10,000 and above' },
-      { key: 'budget_4', score: 4, label: '$5,000 – $10,000' },
-      { key: 'budget_3', score: 3, label: '$2,000 – $5,000' },
-      { key: 'budget_2', score: 2, label: '$500 – $2,000' },
-      { key: 'budget_1', score: 1, label: 'Under $500' },
+      { key: 'budget_5', score: 5, label: '$10,000 and above', hint: 'Ultra premium' },
+      { key: 'budget_4', score: 4, label: '$5,000 – $10,000',  hint: 'High luxury' },
+      { key: 'budget_3', score: 3, label: '$2,000 – $5,000',   hint: 'Accessible luxury' },
+      { key: 'budget_2', score: 2, label: '$500 – $2,000',     hint: 'Entry luxury' },
+      { key: 'budget_1', score: 1, label: 'Under $500',        hint: 'Gifting range' },
     ],
   },
   {
@@ -87,17 +86,15 @@ const QUESTIONS = [
     question: 'When investing in a piece, what matters most to you?',
     subtitle: 'This shapes the recommendations you will see',
     options: [
-      { key: 'val_5', score: 5, label: 'Its long-term investment value' },
-      { key: 'val_4', score: 4, label: 'Exceptional craftsmanship and heritage' },
-      { key: 'val_4b', score: 4, label: 'Exclusivity and rarity' },
-      { key: 'val_3', score: 3, label: 'Personal expression and originality' },
-      { key: 'val_2', score: 2, label: 'A meaningful reward for a milestone' },
+      { key: 'val_5',  score: 5, label: 'Its long-term investment value',         hint: 'Asset mindset' },
+      { key: 'val_4',  score: 4, label: 'Exceptional craftsmanship and heritage', hint: 'Artisan quality' },
+      { key: 'val_4b', score: 4, label: 'Exclusivity and rarity',                 hint: 'One of a kind' },
+      { key: 'val_3',  score: 3, label: 'Personal expression and originality',    hint: 'My signature' },
+      { key: 'val_2',  score: 2, label: 'A meaningful reward for a milestone',    hint: 'Celebrating me' },
     ],
   },
 ];
 
-// Max possible score: 30 (6 questions × 5 pts)
-// LIRA segments: Premium 22-30, Selective 12-21, Explorer 0-11
 const getLISProfileFromScore = (score) => {
   if (score >= 22) return 'Premium';
   if (score >= 12) return 'Selective';
@@ -106,19 +103,23 @@ const getLISProfileFromScore = (score) => {
 
 const StyleQuizScreen = ({ navigation }) => {
   const { completeStyleQuiz } = useApp();
-  const [step, setStep] = useState(0); // 0=intro, 1-6=questions, 7=result
-  const [brandSelections, setBrandSelections] = useState([]); // multi-select for Q1
-  const [scoreAccum, setScoreAccum] = useState(0);
-  const [notifPref, setNotifPref] = useState('weekly');
+  const [step, setStep]                      = useState(0);
+  const [brandSelections, setBrandSelections] = useState([]);
+  const [scoreAccum, setScoreAccum]          = useState(0);
+  const [notifPref, setNotifPref]            = useState('weekly');
+  const [selectedOption, setSelectedOption]  = useState(null);
+  const [selectedBudgetKey, setSelectedBudgetKey] = useState(null);
   const fadeAnim = useRef(new Animated.Value(1)).current;
 
   const totalSteps = QUESTIONS.length;
-  const currentQ = QUESTIONS[step - 1];
+  const currentQ   = QUESTIONS[step - 1];
+  const progress   = step > 0 && step <= totalSteps ? step / totalSteps : step > totalSteps ? 1 : 0;
 
   const transition = (cb) => {
-    Animated.timing(fadeAnim, { toValue: 0, duration: 180, useNativeDriver: true }).start(() => {
+    Animated.timing(fadeAnim, { toValue: 0, duration: 160, useNativeDriver: true }).start(() => {
       cb();
-      Animated.timing(fadeAnim, { toValue: 1, duration: 280, useNativeDriver: true }).start();
+      setSelectedOption(null);
+      Animated.timing(fadeAnim, { toValue: 1, duration: 260, useNativeDriver: true }).start();
     });
   };
 
@@ -137,19 +138,23 @@ const StyleQuizScreen = ({ navigation }) => {
   };
 
   const handleSingleAnswer = (option) => {
+    setSelectedOption(option.key);
     const newScore = scoreAccum + option.score;
     if (option.notifPref) setNotifPref(option.notifPref);
 
+    // Capture budget selection (Q5)
+    if (step === 5) setSelectedBudgetKey(option.key);
+
     if (step < totalSteps) {
       setScoreAccum(newScore);
-      transition(() => setStep(step + 1));
+      setTimeout(() => transition(() => setStep(step + 1)), 180);
     } else {
-      // Last question
       const profile = getLISProfileFromScore(newScore);
-      transition(async () => {
+      const budgetKey = step === 5 ? option.key : selectedBudgetKey;
+      setTimeout(() => transition(async () => {
         setStep(totalSteps + 1);
-        await completeStyleQuiz(newScore, profile, notifPref);
-      });
+        await completeStyleQuiz(newScore, profile, notifPref, brandSelections, budgetKey);
+      }), 180);
     }
   };
 
@@ -158,402 +163,314 @@ const StyleQuizScreen = ({ navigation }) => {
     navigation.replace('MainTabs');
   };
 
-  const handleFinish = () => {
-    navigation.replace('MainTabs');
-  };
-
-  const progress = step > 0 && step <= totalSteps ? step / totalSteps : step > totalSteps ? 1 : 0;
-
-  // ── Intro ─────────────────────────────────────────────
+  // ── Intro ──────────────────────────────────────────────
   if (step === 0) {
     return (
-      <View style={styles.container}>
+      <SafeAreaView style={styles.container}>
         <StatusBar barStyle="dark-content" />
-        <Animated.View style={[styles.introContent, { opacity: fadeAnim }]}>
-          <Text style={styles.introLabel}>LUXESENSE</Text>
-          <Text style={styles.introTitle}>A Few Quick{'\n'}Questions</Text>
-          <View style={styles.goldLine} />
-          <Text style={styles.introSubtitle}>
-            Help us understand your taste so we can make your experience truly personal — from the pieces we surface to the way your advisor reaches out.
-          </Text>
+        <Animated.View style={[styles.introWrap, { opacity: fadeAnim }]}>
+          <View style={styles.introTop}>
+            <Text style={styles.introEyebrow}>LUXESENSE</Text>
+            <Text style={styles.introTitle}>A Few Quick{'\n'}Questions</Text>
+            <View style={styles.goldLine} />
+            <Text style={styles.introSubtitle}>
+              Help us understand your taste so we can make your experience truly personal — from the pieces we surface to the way your advisor reaches out.
+            </Text>
+          </View>
+
           <View style={styles.pillRow}>
-            {['6 Questions', '3 Minutes', 'Personalised'].map(t => (
-              <View key={t} style={styles.pill}>
-                <Text style={styles.pillText}>{t}</Text>
+            {[
+              { icon: 'list-outline',        label: '6 Questions' },
+              { icon: 'time-outline',        label: '3 Minutes' },
+              { icon: 'lock-closed-outline', label: 'Private' },
+            ].map(p => (
+              <View key={p.label} style={styles.pill}>
+                <Ionicons name={p.icon} size={13} color={COLORS.gold} />
+                <Text style={styles.pillText}>{p.label}</Text>
               </View>
             ))}
           </View>
-          <TouchableOpacity style={styles.startBtn} onPress={() => transition(() => setStep(1))}>
-            <Text style={styles.startBtnText}>Get Started</Text>
-            <Ionicons name="arrow-forward" size={18} color={COLORS.white} />
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.skipBtn} onPress={handleSkip}>
-            <Text style={styles.skipText}>Skip for now</Text>
-          </TouchableOpacity>
+
+          <View style={styles.introActions}>
+            <TouchableOpacity style={styles.primaryBtn} onPress={() => transition(() => setStep(1))} activeOpacity={0.85}>
+              <Text style={styles.primaryBtnText}>Get Started</Text>
+              <Ionicons name="arrow-forward" size={18} color="#fff" />
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.ghostBtn} onPress={handleSkip}>
+              <Text style={styles.ghostBtnText}>Skip for now</Text>
+            </TouchableOpacity>
+          </View>
         </Animated.View>
-      </View>
+      </SafeAreaView>
     );
   }
 
-  // ── Thank You / Result ────────────────────────────────
+  // ── Result ─────────────────────────────────────────────
   if (step > totalSteps) {
     return (
-      <View style={styles.container}>
+      <SafeAreaView style={styles.container}>
         <StatusBar barStyle="dark-content" />
-        <View style={styles.thankYouContent}>
-          <Animated.View style={{ opacity: fadeAnim, alignItems: 'center' }}>
-            <View style={styles.checkCircle}>
-              <Ionicons name="checkmark" size={36} color={COLORS.gold} />
-            </View>
-            <Text style={styles.thankYouTitle}>Thank you for sharing.</Text>
-            <View style={styles.goldLine} />
-            <Text style={styles.thankYouBody}>
-              We will use your answers to personalise your shopping experience — from the pieces we recommend to how your advisor reaches out.
-            </Text>
-            <Text style={styles.thankYouSub}>
-              Your curated selection is ready.
-            </Text>
-            <TouchableOpacity style={styles.startBtn} onPress={handleFinish}>
-              <Text style={styles.startBtnText}>Start Exploring</Text>
-              <Ionicons name="arrow-forward" size={18} color={COLORS.white} />
-            </TouchableOpacity>
-          </Animated.View>
-        </View>
-      </View>
+        <Animated.View style={[styles.resultWrap, { opacity: fadeAnim }]}>
+          <View style={styles.resultIconWrap}>
+            <Ionicons name="checkmark" size={32} color={COLORS.gold} />
+          </View>
+          <Text style={styles.resultTitle}>Thank you{'\n'}for sharing.</Text>
+          <View style={styles.goldLine} />
+          <Text style={styles.resultDesc}>
+            We will use your answers to personalise your shopping experience — from the pieces we recommend to how your advisor reaches out.
+          </Text>
+          <View style={styles.resultHints}>
+            {[
+              { icon: 'bag-outline',      text: 'Personalised product feed' },
+              { icon: 'person-outline',   text: 'Matched advisor outreach' },
+              { icon: 'sparkles-outline', text: 'Curated recommendations' },
+            ].map(h => (
+              <View key={h.text} style={styles.resultHintRow}>
+                <View style={styles.resultHintIcon}>
+                  <Ionicons name={h.icon} size={14} color={COLORS.gold} />
+                </View>
+                <Text style={styles.resultHintText}>{h.text}</Text>
+              </View>
+            ))}
+          </View>
+          <TouchableOpacity
+            style={[styles.primaryBtn, { marginTop: 32 }]}
+            onPress={() => navigation.replace('MainTabs')}
+            activeOpacity={0.85}
+          >
+            <Text style={styles.primaryBtnText}>Start Exploring</Text>
+            <Ionicons name="arrow-forward" size={18} color="#fff" />
+          </TouchableOpacity>
+        </Animated.View>
+      </SafeAreaView>
     );
   }
 
-  // ── Q1: Multi-select brands ──────────────────────────
+  // ── Progress bar (shared) ──────────────────────────────
+  const ProgressBar = () => (
+    <View style={styles.progressWrap}>
+      <View style={styles.progressTrack}>
+        <View style={[styles.progressFill, { width: `${progress * 100}%` }]} />
+      </View>
+      <Text style={styles.progressLabel}>{step} / {totalSteps}</Text>
+    </View>
+  );
+
+  // ── Q1: Brand list ─────────────────────────────────────
   if (currentQ.type === 'multi') {
     return (
-      <View style={styles.container}>
+      <SafeAreaView style={styles.container}>
         <StatusBar barStyle="dark-content" />
-        <View style={styles.progressContainer}>
-          <View style={styles.progressBar}>
-            <View style={[styles.progressFill, { width: `${progress * 100}%` }]} />
-          </View>
-          <Text style={styles.progressText}>{step} / {totalSteps}</Text>
-        </View>
-        <ScrollView contentContainerStyle={styles.questionScroll} showsVerticalScrollIndicator={false}>
+        <ProgressBar />
+        <ScrollView contentContainerStyle={styles.qScroll} showsVerticalScrollIndicator={false}>
           <Animated.View style={{ opacity: fadeAnim }}>
-            <Text style={styles.questionNumber}>Question {step}</Text>
-            <Text style={styles.questionText}>{currentQ.question}</Text>
-            <Text style={styles.questionSubtitle}>{currentQ.subtitle}</Text>
+            <Text style={styles.qStep}>Question {step}</Text>
+            <Text style={styles.qTitle}>{currentQ.question}</Text>
+            <Text style={styles.qSub}>{currentQ.subtitle}</Text>
 
-            <View style={styles.brandGrid}>
+            <View style={styles.brandList}>
               {currentQ.options.map(opt => {
-                const selected = brandSelections.includes(opt.key);
+                const sel = brandSelections.includes(opt.key);
                 return (
                   <TouchableOpacity
                     key={opt.key}
-                    style={[styles.brandChip, selected && styles.brandChipSelected]}
+                    style={[styles.brandRow, sel && styles.brandRowSel]}
                     onPress={() => toggleBrand(opt.key)}
                     activeOpacity={0.75}
                   >
-                    <Text style={[styles.brandChipText, selected && styles.brandChipTextSelected]}>
+                    <Text style={[styles.brandRowText, sel && styles.brandRowTextSel]}>
                       {opt.label}
                     </Text>
-                    {selected && (
-                      <Ionicons name="checkmark" size={14} color={COLORS.white} style={{ marginLeft: 6 }} />
-                    )}
+                    <View style={[styles.brandCheck, sel && styles.brandCheckSel]}>
+                      {sel && <Ionicons name="checkmark" size={13} color="#fff" />}
+                    </View>
                   </TouchableOpacity>
                 );
               })}
             </View>
 
             <TouchableOpacity
-              style={[styles.nextBtn, brandSelections.length === 0 && styles.nextBtnDisabled]}
+              style={[styles.primaryBtn, brandSelections.length === 0 && styles.primaryBtnMuted]}
               onPress={handleBrandNext}
+              activeOpacity={0.85}
             >
-              <Text style={styles.nextBtnText}>
-                {brandSelections.length === 0 ? 'Skip this one' : 'Continue'}
+              <Text style={styles.primaryBtnText}>
+                {brandSelections.length === 0 ? 'Skip this one' : `Continue (${brandSelections.length} selected)`}
               </Text>
-              <Ionicons name="arrow-forward" size={18} color={COLORS.white} />
+              <Ionicons name="arrow-forward" size={18} color="#fff" />
             </TouchableOpacity>
           </Animated.View>
         </ScrollView>
-      </View>
+      </SafeAreaView>
     );
   }
 
-  // ── Single-select questions ──────────────────────────
+  // ── Single-select questions ────────────────────────────
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
       <StatusBar barStyle="dark-content" />
-      <View style={styles.progressContainer}>
-        <View style={styles.progressBar}>
-          <View style={[styles.progressFill, { width: `${progress * 100}%` }]} />
-        </View>
-        <Text style={styles.progressText}>{step} / {totalSteps}</Text>
-      </View>
-      <ScrollView contentContainerStyle={styles.questionScroll} showsVerticalScrollIndicator={false}>
+      <ProgressBar />
+      <ScrollView contentContainerStyle={styles.qScroll} showsVerticalScrollIndicator={false}>
         <Animated.View style={{ opacity: fadeAnim }}>
-          <Text style={styles.questionNumber}>Question {step}</Text>
-          <Text style={styles.questionText}>{currentQ.question}</Text>
-          <Text style={styles.questionSubtitle}>{currentQ.subtitle}</Text>
+          <Text style={styles.qStep}>Question {step}</Text>
+          <Text style={styles.qTitle}>{currentQ.question}</Text>
+          <Text style={styles.qSub}>{currentQ.subtitle}</Text>
 
-          {currentQ.options.map(opt => (
-            <TouchableOpacity
-              key={opt.key}
-              style={styles.optionCard}
-              onPress={() => handleSingleAnswer(opt)}
-              activeOpacity={0.75}
-            >
-              <Text style={styles.optionLabel}>{opt.label}</Text>
-              <Ionicons name="chevron-forward" size={18} color={COLORS.lightGray} />
-            </TouchableOpacity>
-          ))}
+          <View style={styles.optionList}>
+            {currentQ.options.map(opt => {
+              const active = selectedOption === opt.key;
+              return (
+                <TouchableOpacity
+                  key={opt.key}
+                  style={[styles.optionCard, active && styles.optionCardActive]}
+                  onPress={() => handleSingleAnswer(opt)}
+                  activeOpacity={0.75}
+                >
+                  <View style={styles.optionBody}>
+                    <Text style={[styles.optionLabel, active && styles.optionLabelActive]}>
+                      {opt.label}
+                    </Text>
+                    {opt.hint && (
+                      <Text style={styles.optionHint}>{opt.hint}</Text>
+                    )}
+                  </View>
+                  <View style={[styles.optionRadio, active && styles.optionRadioActive]}>
+                    {active && <View style={styles.optionRadioDot} />}
+                  </View>
+                </TouchableOpacity>
+              );
+            })}
+          </View>
         </Animated.View>
       </ScrollView>
-    </View>
+    </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-  },
+  container: { flex: 1, backgroundColor: '#FFFFFF' },
 
-  // Intro
-  introContent: {
-    flex: 1,
-    paddingHorizontal: SIZES.padding,
-    paddingTop: 100,
-    paddingBottom: 50,
+  // ── Intro ──
+  introWrap: {
+    flex: 1, paddingHorizontal: SIZES.padding,
+    paddingTop: 40, paddingBottom: 36, justifyContent: 'space-between',
   },
-  introLabel: {
-    fontSize: 11,
-    fontWeight: '700',
-    color: '#AAA',
-    letterSpacing: 4,
-    marginBottom: 20,
+  introTop: { flex: 1, justifyContent: 'center' },
+  introEyebrow: {
+    fontSize: 11, fontWeight: '700', color: '#AAAAAA',
+    letterSpacing: 4, marginBottom: 24,
   },
   introTitle: {
-    fontSize: 38,
-    fontWeight: '800',
-    color: '#1A1A1A',
-    letterSpacing: -1,
-    lineHeight: 46,
-    marginBottom: 20,
+    fontSize: 34, fontWeight: '500', color: '#1A1A1A',
+    letterSpacing: -0.5, lineHeight: 42, marginBottom: 20,
   },
-  goldLine: {
-    width: 32,
-    height: 2,
-    backgroundColor: COLORS.gold,
-    marginBottom: 20,
-  },
-  introSubtitle: {
-    fontSize: 15,
-    color: '#888',
-    lineHeight: 24,
-    marginBottom: 36,
-  },
-  pillRow: {
-    flexDirection: 'row',
-    gap: 8,
-    marginBottom: 48,
-    flexWrap: 'wrap',
-  },
+  goldLine: { width: 32, height: 2, backgroundColor: COLORS.gold, marginBottom: 20 },
+  introSubtitle: { fontSize: 15, color: '#888', lineHeight: 24, maxWidth: '90%' },
+  pillRow: { flexDirection: 'row', gap: 8, marginVertical: 32 },
   pill: {
-    paddingHorizontal: 14,
-    paddingVertical: 7,
-    backgroundColor: '#F5F0EB',
-    borderRadius: 20,
+    flexDirection: 'row', alignItems: 'center', gap: 6,
+    paddingHorizontal: 14, paddingVertical: 8,
+    backgroundColor: '#F5F0EB', borderRadius: 20,
   },
-  pillText: {
-    fontSize: 12,
-    color: '#888',
-    fontWeight: '500',
-  },
-  startBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#1A1A1A',
-    height: 56,
-    borderRadius: 28,
-    gap: 10,
-    marginBottom: 16,
-  },
-  startBtnText: {
-    fontSize: 15,
-    fontWeight: '600',
-    color: '#fff',
-    letterSpacing: 0.3,
-  },
-  skipBtn: {
-    alignItems: 'center',
-    padding: 12,
-  },
-  skipText: {
-    fontSize: 14,
-    color: '#AAA',
-    textDecorationLine: 'underline',
-  },
+  pillText: { fontSize: 12, color: '#888', fontWeight: '500' },
+  introActions: { gap: 10 },
 
-  // Progress
-  progressContainer: {
-    paddingHorizontal: SIZES.padding,
-    paddingTop: 60,
-    paddingBottom: 8,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
+  // ── Buttons ──
+  primaryBtn: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
+    backgroundColor: '#1A1A1A', height: 56, borderRadius: 14, gap: 10,
   },
-  progressBar: {
-    flex: 1,
-    height: 3,
-    backgroundColor: '#F0EDE8',
-    borderRadius: 2,
-    overflow: 'hidden',
-  },
-  progressFill: {
-    height: '100%',
-    backgroundColor: '#1A1A1A',
-    borderRadius: 2,
-  },
-  progressText: {
-    fontSize: 12,
-    color: '#AAA',
-    fontWeight: '500',
-    minWidth: 36,
-    textAlign: 'right',
-  },
+  primaryBtnMuted: { backgroundColor: '#CCCCCC' },
+  primaryBtnText: { fontSize: 15, fontWeight: '600', color: '#fff', letterSpacing: 0.2 },
+  ghostBtn: { alignItems: 'center', paddingVertical: 14 },
+  ghostBtnText: { fontSize: 14, color: '#AAAAAA', textDecorationLine: 'underline' },
 
-  // Question
-  questionScroll: {
-    paddingHorizontal: SIZES.padding,
-    paddingTop: 28,
-    paddingBottom: 40,
+  // ── Progress ──
+  progressWrap: {
+    flexDirection: 'row', alignItems: 'center',
+    paddingHorizontal: SIZES.padding, paddingTop: 16, paddingBottom: 8, gap: 12,
   },
-  questionNumber: {
-    fontSize: 11,
-    fontWeight: '600',
-    color: COLORS.gold,
-    letterSpacing: 3,
-    marginBottom: 12,
-    textTransform: 'uppercase',
+  progressTrack: {
+    flex: 1, height: 3, backgroundColor: '#F0EDE8',
+    borderRadius: 2, overflow: 'hidden',
   },
-  questionText: {
-    fontSize: 28,
-    fontWeight: '800',
-    color: '#1A1A1A',
-    lineHeight: 36,
-    letterSpacing: -0.5,
-    marginBottom: 8,
-  },
-  questionSubtitle: {
-    fontSize: 14,
-    color: '#999',
-    marginBottom: 32,
-  },
+  progressFill: { height: '100%', backgroundColor: COLORS.gold, borderRadius: 2 },
+  progressLabel: { fontSize: 12, color: '#AAAAAA', fontWeight: '500', minWidth: 32, textAlign: 'right' },
 
-  // Single option cards
+  // ── Question body ──
+  qScroll: { paddingHorizontal: SIZES.padding, paddingTop: 24, paddingBottom: 48 },
+  qStep: { fontSize: 11, fontWeight: '500', color: COLORS.gold, letterSpacing: 2, marginBottom: 10, textTransform: 'uppercase' },
+  qTitle: { fontSize: 22, fontWeight: '500', color: '#1A1A1A', lineHeight: 30, marginBottom: 6 },
+  qSub:   { fontSize: 13, color: '#AAAAAA', marginBottom: 28 },
+
+  // ── Brand list ──
+  brandList: { gap: 0, marginBottom: 28, borderRadius: 14, overflow: 'hidden', borderWidth: 1, borderColor: '#F0EDE8' },
+  brandRow: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+    paddingHorizontal: 18, paddingVertical: 16,
+    backgroundColor: '#fff', borderBottomWidth: 1, borderBottomColor: '#F0EDE8',
+  },
+  brandRowSel: { backgroundColor: '#FAF8F5' },
+  brandRowText:    { fontSize: 14, fontWeight: '500', color: '#1A1A1A' },
+  brandRowTextSel: { color: '#1A1A1A' },
+  brandCheck: {
+    width: 24, height: 24, borderRadius: 12,
+    borderWidth: 1.5, borderColor: '#DDDDDD',
+    justifyContent: 'center', alignItems: 'center',
+  },
+  brandCheckSel: { backgroundColor: COLORS.gold, borderColor: COLORS.gold },
+
+  // ── Single options ──
+  optionList: { gap: 10 },
   optionCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    backgroundColor: '#F5F0EB',
-    borderRadius: 14,
-    paddingHorizontal: 20,
-    paddingVertical: 18,
-    marginBottom: 10,
+    flexDirection: 'row', alignItems: 'center',
+    backgroundColor: '#F5F0EB', borderRadius: 14,
+    paddingHorizontal: 18, paddingVertical: 16, gap: 12,
+    borderWidth: 1.5, borderColor: 'transparent',
   },
-  optionLabel: {
-    fontSize: 15,
-    fontWeight: '500',
-    color: '#1A1A1A',
-    flex: 1,
+  optionCardActive: { backgroundColor: '#fff', borderColor: COLORS.gold },
+  optionBody: { flex: 1 },
+  optionLabel:       { fontSize: 14, fontWeight: '500', color: '#1A1A1A' },
+  optionLabelActive: { color: '#1A1A1A' },
+  optionHint:        { fontSize: 11, color: '#AAAAAA', marginTop: 3 },
+  optionRadio: {
+    width: 22, height: 22, borderRadius: 11,
+    borderWidth: 1.5, borderColor: '#CCCCCC',
+    justifyContent: 'center', alignItems: 'center',
   },
+  optionRadioActive: { borderColor: COLORS.gold },
+  optionRadioDot: { width: 10, height: 10, borderRadius: 5, backgroundColor: COLORS.gold },
 
-  // Multi-select brand chips
-  brandGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 10,
-    marginBottom: 32,
+  // ── Result ──
+  resultWrap: {
+    flex: 1, paddingHorizontal: SIZES.padding,
+    paddingTop: 72, paddingBottom: 44, alignItems: 'center',
   },
-  brandChip: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 18,
-    paddingVertical: 12,
+  resultIconWrap: {
+    width: 72, height: 72, borderRadius: 36,
     backgroundColor: '#F5F0EB',
-    borderRadius: 28,
-    borderWidth: 1.5,
-    borderColor: 'transparent',
+    justifyContent: 'center', alignItems: 'center', marginBottom: 28,
   },
-  brandChipSelected: {
-    backgroundColor: '#1A1A1A',
-    borderColor: '#1A1A1A',
+  resultTitle: {
+    fontSize: 30, fontWeight: '500', color: '#1A1A1A',
+    letterSpacing: -0.3, lineHeight: 38, textAlign: 'center', marginBottom: 20,
   },
-  brandChipText: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: '#1A1A1A',
+  resultDesc: {
+    fontSize: 14, color: '#888', lineHeight: 22,
+    textAlign: 'center', marginBottom: 32, paddingHorizontal: 8,
   },
-  brandChipTextSelected: {
-    color: '#fff',
+  resultHints: { width: '100%', gap: 10 },
+  resultHintRow: {
+    flexDirection: 'row', alignItems: 'center', gap: 12,
+    backgroundColor: '#F5F0EB', borderRadius: 12,
+    paddingHorizontal: 16, paddingVertical: 14,
   },
-  nextBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#1A1A1A',
-    height: 56,
-    borderRadius: 28,
-    gap: 10,
-    marginTop: 8,
+  resultHintIcon: {
+    width: 34, height: 34, borderRadius: 10,
+    backgroundColor: '#fff',
+    justifyContent: 'center', alignItems: 'center',
   },
-  nextBtnDisabled: {
-    backgroundColor: '#CCCCCC',
-  },
-  nextBtnText: {
-    fontSize: 15,
-    fontWeight: '600',
-    color: '#fff',
-    letterSpacing: 0.3,
-  },
-
-  // Thank You screen
-  thankYouContent: {
-    flex: 1,
-    paddingHorizontal: SIZES.padding,
-    justifyContent: 'center',
-    paddingBottom: 60,
-  },
-  checkCircle: {
-    width: 72,
-    height: 72,
-    borderRadius: 36,
-    backgroundColor: '#F5F0EB',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 28,
-  },
-  thankYouTitle: {
-    fontSize: 34,
-    fontWeight: '800',
-    color: '#1A1A1A',
-    marginBottom: 20,
-    textAlign: 'center',
-    letterSpacing: -0.5,
-  },
-  thankYouBody: {
-    fontSize: 15,
-    color: '#888',
-    lineHeight: 24,
-    textAlign: 'center',
-    marginBottom: 16,
-    paddingHorizontal: 8,
-  },
-  thankYouSub: {
-    fontSize: 13,
-    color: '#AAA',
-    textAlign: 'center',
-    marginBottom: 48,
-  },
+  resultHintText: { fontSize: 13, fontWeight: '500', color: '#1A1A1A' },
 });
 
 export default StyleQuizScreen;

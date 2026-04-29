@@ -678,8 +678,30 @@ export const AppProvider = ({ children }) => {
     return newOrder;
   };
 
-  const completeStyleQuiz = async (score, profile, notifPref) => {
-    setUser(prev => ({ ...prev, styleProfile: profile, styleScore: score }));
+  const BUDGET_MAX = {
+    budget_5: null,   // no limit
+    budget_4: 10000,
+    budget_3: 5000,
+    budget_2: 2000,
+    budget_1: 500,
+  };
+
+  const completeStyleQuiz = async (score, profile, notifPref, quizBrands = [], budgetKey = null) => {
+    const quizBudgetMax = budgetKey ? BUDGET_MAX[budgetKey] : null;
+    setUser(prev => {
+      const updated = { ...prev, lisSegment: profile, lisScore: score, lisNotifPref: notifPref, quizBrands, quizBudgetMax };
+      // Persist quiz preferences so they survive app restarts
+      AsyncStorage.getItem('authState').then(saved => {
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          AsyncStorage.setItem('authState', JSON.stringify({
+            ...parsed,
+            savedUser: { ...parsed.savedUser, lisSegment: profile, lisScore: score, lisNotifPref: notifPref, quizBrands, quizBudgetMax },
+          }));
+        }
+      });
+      return updated;
+    });
   };
 
   return (

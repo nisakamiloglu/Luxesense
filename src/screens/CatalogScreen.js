@@ -1,18 +1,17 @@
 import React, { useState, useCallback, useRef, useEffect } from 'react';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
   View,
   Text,
   StyleSheet,
   ScrollView,
   TouchableOpacity,
-  Image,
   FlatList,
   TextInput,
   Modal,
   Dimensions,
   Animated,
 } from 'react-native';
+import { Image } from 'expo-image';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import { useFocusEffect, useScrollToTop } from '@react-navigation/native';
@@ -62,15 +61,10 @@ const CatalogScreen = ({ navigation, route }) => {
   const listRef = useRef(null);
   useScrollToTop(listRef);
 
-  useEffect(() => {
-    AsyncStorage.getItem('selectedGender').then(saved => {
-      if (saved) setGender(saved);
-    });
-  }, []);
 
   const selectGender = (g) => {
     setGender(g);
-    AsyncStorage.setItem('selectedGender', g);
+    setActiveCategory('all');
   };
 
   useFocusEffect(
@@ -85,11 +79,19 @@ const CatalogScreen = ({ navigation, route }) => {
         setActiveBrand('all');
         navigation.setParams({ selectedCategory: undefined });
       }
-    }, [route?.params?.selectedBrand, route?.params?.selectedCategory])
+      if (route?.params?.searchQuery) {
+        setSearchQuery(route.params.searchQuery);
+        setGender(null);
+        navigation.setParams({ searchQuery: undefined });
+      }
+    }, [route?.params?.selectedBrand, route?.params?.selectedCategory, route?.params?.searchQuery])
   );
 
   const pendingBrand = route?.params?.selectedBrand;
   const effectiveBrand = pendingBrand || activeBrand;
+
+  const MEN_CATEGORY_IDS = MEN_CATEGORIES.map(c => c.id);
+  const WOMEN_CATEGORY_IDS = WOMEN_CATEGORIES.map(c => c.id);
 
   const filteredProducts = products.filter((product) => {
     const matchesCategory = activeCategory === 'all' || product.category === activeCategory;
@@ -99,7 +101,10 @@ const CatalogScreen = ({ navigation, route }) => {
       product.brand.toLowerCase().includes(searchQuery.toLowerCase());
     const priceRange = priceRanges.find(r => r.id === activePriceRange);
     const matchesPrice = !priceRange || (product.price >= priceRange.min && product.price <= priceRange.max);
-    return matchesCategory && matchesBrand && matchesSearch && matchesPrice;
+    const matchesGender = !gender
+      || (gender === 'men' && MEN_CATEGORY_IDS.includes(product.category))
+      || (gender === 'women' && WOMEN_CATEGORY_IDS.includes(product.category));
+    return matchesCategory && matchesBrand && matchesSearch && matchesPrice && matchesGender;
   }).sort((a, b) => {
     switch (sortBy) {
       case 'price_low': return a.price - b.price;

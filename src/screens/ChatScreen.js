@@ -8,11 +8,11 @@ import {
   TextInput,
   KeyboardAvoidingView,
   Platform,
-  Image,
   Linking,
   Alert,
   Keyboard,
 } from 'react-native';
+import { Image } from 'expo-image';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import { COLORS, SIZES, SHADOWS } from '../constants/theme';

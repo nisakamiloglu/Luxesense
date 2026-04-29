@@ -6,8 +6,8 @@ import {
   ScrollView,
   TouchableOpacity,
   Animated,
-  Image,
 } from 'react-native';
+import { Image } from 'expo-image';
 import { Ionicons } from '@expo/vector-icons';
 import { COLORS, SIZES, SHADOWS } from '../constants/theme';
 

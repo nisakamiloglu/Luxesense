@@ -5,11 +5,11 @@ import {
   StyleSheet,
   ScrollView,
   TouchableOpacity,
-  Image,
   TextInput,
   Dimensions,
   FlatList,
 } from 'react-native';
+import { Image } from 'expo-image';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import { useScrollToTop } from '@react-navigation/native';
@@ -35,9 +35,42 @@ const HomeScreen = ({ navigation }) => {
   const bannerRef = useRef(null);
   useScrollToTop(listRef);
 
-  const filtered = products.filter((p) =>
-    !search || p.name.toLowerCase().includes(search.toLowerCase()) || p.brand.toLowerCase().includes(search.toLowerCase())
-  ).slice(0, 8);
+  const getPersonalizedProducts = () => {
+    const quizBrands = user.quizBrands;
+    const quizBudgetMax = user.quizBudgetMax;
+
+    let base = products;
+
+    // Apply search filter
+    if (search) {
+      base = base.filter(p =>
+        p.name.toLowerCase().includes(search.toLowerCase()) ||
+        p.brand.toLowerCase().includes(search.toLowerCase())
+      );
+    }
+
+    // Personalize by quiz brand selections
+    if (quizBrands && quizBrands.length > 0) {
+      const brandFiltered = base.filter(p =>
+        quizBrands.some(b => p.brand.toUpperCase() === b)
+      );
+
+      if (brandFiltered.length > 0) {
+        // Sort: budget-appropriate products first, rest after
+        if (quizBudgetMax) {
+          return [
+            ...brandFiltered.filter(p => p.price <= quizBudgetMax),
+            ...brandFiltered.filter(p => p.price > quizBudgetMax),
+          ].slice(0, 8);
+        }
+        return brandFiltered.slice(0, 8);
+      }
+    }
+
+    return base.slice(0, 8);
+  };
+
+  const filtered = getPersonalizedProducts();
 
   const onBannerScroll = (e) => {
     setActiveBanner(Math.round(e.nativeEvent.contentOffset.x / width));
@@ -193,14 +226,16 @@ const HomeScreen = ({ navigation }) => {
             </View>
 
             {/* Picked for you header */}
-            <Text style={styles.youMayLike}>Picked for you</Text>
+            <Text style={styles.youMayLike}>
+              {user.quizBrands && user.quizBrands.length > 0 ? 'Picked for you' : 'New Arrivals'}
+            </Text>
           </>
         }
       />
 
       {/* AI Stylist FAB */}
       <TouchableOpacity style={styles.fab} onPress={() => navigation.navigate('AIStylist')} activeOpacity={0.85}>
-        <Ionicons name="sparkles" size={22} color="#fff" />
+        <Ionicons name="sparkles" size={22} color={COLORS.gold} />
       </TouchableOpacity>
 
     </View>
@@ -373,7 +408,9 @@ const styles = StyleSheet.create({
     width: 54,
     height: 54,
     borderRadius: 27,
-    backgroundColor: COLORS.gold,
+    backgroundColor: 'rgba(245,240,235,0.92)',
+    borderWidth: 1,
+    borderColor: '#E8E0D8',
     justifyContent: 'center',
     alignItems: 'center',
     ...SHADOWS.medium,
