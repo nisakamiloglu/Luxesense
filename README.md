@@ -12,22 +12,22 @@ A full-stack luxury retail mobile application that connects high-end customers w
 
 <table>
   <tr>
-    <td align="center"><img src="assets/Screenshots/splash.png" width="160"/><br/><sub>Splash</sub></td>
-    <td align="center"><img src="assets/Screenshots/login.png" width="160"/><br/><sub>Login</sub></td>
-    <td align="center"><img src="assets/Screenshots/homepage.png" width="160"/><br/><sub>Home Feed</sub></td>
-    <td align="center"><img src="assets/Screenshots/homepage2.png" width="160"/><br/><sub>Personalized Feed</sub></td>
+    <td align="center"><img src="assets/Screenshots/splash.png" width="130"/><br/><sub>Splash</sub></td>
+    <td align="center"><img src="assets/Screenshots/login.png" width="130"/><br/><sub>Login</sub></td>
+    <td align="center"><img src="assets/Screenshots/homepage.png" width="130"/><br/><sub>Home Feed</sub></td>
+    <td align="center"><img src="assets/Screenshots/homepage2.png" width="130"/><br/><sub>Personalized Feed</sub></td>
   </tr>
   <tr>
-    <td align="center"><img src="assets/Screenshots/shop.png" width="160"/><br/><sub>Catalog</sub></td>
-    <td align="center"><img src="assets/Screenshots/women.PNG" width="160"/><br/><sub>Women's Collection</sub></td>
-    <td align="center"><img src="assets/Screenshots/men.png" width="160"/><br/><sub>Men's Collection</sub></td>
-    <td align="center"><img src="assets/Screenshots/brand.png" width="160"/><br/><sub>Brand View</sub></td>
+    <td align="center"><img src="assets/Screenshots/shop.png" width="130"/><br/><sub>Catalog</sub></td>
+    <td align="center"><img src="assets/Screenshots/women.PNG" width="130"/><br/><sub>Women's Collection</sub></td>
+    <td align="center"><img src="assets/Screenshots/men.png" width="130"/><br/><sub>Men's Collection</sub></td>
+    <td align="center"><img src="assets/Screenshots/brand.png" width="130"/><br/><sub>Brand View</sub></td>
   </tr>
   <tr>
-    <td align="center"><img src="assets/Screenshots/wishlist.png" width="160"/><br/><sub>Wishlist</sub></td>
-    <td align="center"><img src="assets/Screenshots/aichat.PNG" width="160"/><br/><sub>AI Stylist</sub></td>
-    <td align="center"><img src="assets/Screenshots/chat.png" width="160"/><br/><sub>Advisor Chat</sub></td>
-    <td align="center"><img src="assets/Screenshots/notification.png" width="160"/><br/><sub>Notifications</sub></td>
+    <td align="center"><img src="assets/Screenshots/wishlist.png" width="130"/><br/><sub>Wishlist</sub></td>
+    <td align="center"><img src="assets/Screenshots/aichat.PNG" width="130"/><br/><sub>AI Stylist</sub></td>
+    <td align="center"><img src="assets/Screenshots/chat.png" width="130"/><br/><sub>Advisor Chat</sub></td>
+    <td align="center"><img src="assets/Screenshots/notification.png" width="130"/><br/><sub>Notifications</sub></td>
   </tr>
 </table>
 
@@ -35,14 +35,14 @@ A full-stack luxury retail mobile application that connects high-end customers w
 
 <table>
   <tr>
-    <td align="center"><img src="assets/Screenshots/dashboard.png" width="160"/><br/><sub>Advisor Dashboard</sub></td>
-    <td align="center"><img src="assets/Screenshots/clients.png" width="160"/><br/><sub>Client Portfolio (LIRA Scores)</sub></td>
-    <td align="center"><img src="assets/Screenshots/clientdetail.PNG" width="160"/><br/><sub>Client Detail</sub></td>
-    <td align="center"><img src="assets/Screenshots/clientdetail2.PNG" width="160"/><br/><sub>Client Insights</sub></td>
+    <td align="center"><img src="assets/Screenshots/dashboard.png" width="130"/><br/><sub>Advisor Dashboard</sub></td>
+    <td align="center"><img src="assets/Screenshots/clients.png" width="130"/><br/><sub>Client Portfolio (LIRA Scores)</sub></td>
+    <td align="center"><img src="assets/Screenshots/clientdetail.PNG" width="130"/><br/><sub>Client Detail</sub></td>
+    <td align="center"><img src="assets/Screenshots/clientdetail2.PNG" width="130"/><br/><sub>Client Insights</sub></td>
   </tr>
   <tr>
-    <td align="center"><img src="assets/Screenshots/action.png" width="160"/><br/><sub>Activity & Tasks</sub></td>
-    <td align="center"><img src="assets/Screenshots/message.png" width="160"/><br/><sub>Messages</sub></td>
+    <td align="center"><img src="assets/Screenshots/action.png" width="130"/><br/><sub>Activity & Tasks</sub></td>
+    <td align="center"><img src="assets/Screenshots/message.png" width="130"/><br/><sub>Messages</sub></td>
   </tr>
 </table>
 
