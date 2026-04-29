@@ -210,4 +210,4 @@ Developed as a capstone project for the Management Information Systems program. 
 - **Systems Analysis & Design** — dual-role system architecture
 - **Database Management** — MongoDB schema design, event sourcing
 - **Business Intelligence** — behavioral scoring model (LIRA/LIS)
-- **Agile Development** — sprint planning, backlog management (documentation in `/docs`)
+- **Agile Development** — sprint planning, backlog management
