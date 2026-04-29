@@ -1,4 +1,4 @@
-const GROQ_API_KEY = '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';
+const GROQ_API_KEY = process.env.EXPO_PUBLIC_GROQ_API_KEY;
 const GROQ_API_URL = 'https://api.groq.com/openai/v1/chat/completions';
 
 const getSystemPrompt = (language) => {

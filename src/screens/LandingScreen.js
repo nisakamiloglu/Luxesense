@@ -7,8 +7,8 @@ import {
   Animated,
   Dimensions,
   ImageBackground,
-  Image,
 } from 'react-native';
+import { Image } from 'expo-image';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import { COLORS, SIZES } from '../constants/theme';
@@ -20,13 +20,13 @@ const ONBOARDING = [
   {
     id: 0,
     type: 'hero',
-    image: require('../images/Banner/banner2.webp'),
+    image: require('../images/Banner/splash2.webp'),
   },
   {
     id: 1,
     type: 'grid',
     images: [
-      require('../images/Banner/banner2.webp'),
+      require('../images/Banner/splash2.webp'),
       require('../images/Hermes/birkin.webp'),
       require('../images/Banner/banner5.webp'),
       require('../images/Chanel/boybag.webp'),
@@ -81,7 +81,6 @@ const LandingScreen = ({ navigation }) => {
         <View style={styles.heroOverlay} />
         <Animated.View style={[styles.heroCenter, { opacity: fade }]}>
           <Text style={styles.heroBrand}>LUXESENSE</Text>
-          <Text style={styles.heroAI}>AI</Text>
         </Animated.View>
         <Animated.View style={[styles.heroBottom, { opacity: btnFade }]}>
           <TouchableOpacity style={styles.primaryBtn} onPress={() => navigation.navigate('Register')} activeOpacity={0.85}>
@@ -108,7 +107,7 @@ const LandingScreen = ({ navigation }) => {
           ))}
         </View>
         <View style={styles.bottomCard}>
-          <Text style={styles.brandSmall}>LUXESENSE AI</Text>
+          <Text style={styles.brandSmall}>LUXESENSE</Text>
           <Text style={styles.onboardTitle}>{current.title}</Text>
           <TouchableOpacity style={styles.darkBtn} onPress={next} activeOpacity={0.85}>
             <Text style={styles.darkBtnText}>Start Shopping</Text>
@@ -166,19 +165,13 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
+    paddingTop: 160,
   },
   heroBrand: {
     fontSize: 42,
     fontWeight: '300',
     color: '#fff',
     letterSpacing: 12,
-  },
-  heroAI: {
-    fontSize: 18,
-    fontWeight: '500',
-    color: COLORS.gold,
-    letterSpacing: 8,
-    marginTop: 6,
   },
   heroBottom: {
     paddingHorizontal: SIZES.padding,
@@ -190,8 +183,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     height: 56,
-    backgroundColor: '#1A1A1A',
     borderRadius: 28,
+    borderWidth: 1.5,
+    borderColor: 'rgba(255,255,255,0.7)',
+    backgroundColor: 'rgba(255,255,255,0.12)',
     gap: 10,
   },
   primaryBtnText: {

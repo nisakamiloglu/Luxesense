@@ -104,7 +104,7 @@ export const products = [
     color: 'Black',
     inStock: true,
     description: 'The iconic quilted Classic Flap in lambskin.',
-    image: PLACEHOLDER,
+    image: require('../images/Chanel/classic.webp'),
   },
   {
     id: 10,
@@ -115,7 +115,7 @@ export const products = [
     color: 'Beige',
     inStock: true,
     description: 'The Gabrielle hobo with double chain strap.',
-    image: PLACEHOLDER,
+    image: require('../images/Chanel/gabrielle.webp'),
   },
   {
     id: 11,
@@ -126,7 +126,7 @@ export const products = [
     color: 'Navy',
     inStock: true,
     description: 'The casual Deauville tote in canvas.',
-    image: PLACEHOLDER,
+    image: require('../images/Chanel/deauville.webp'),
   },
 
   // ============ DIOR (5 products) ============
@@ -509,14 +509,14 @@ export const categories = [
 
 // Featured Brands for Home Page
 export const featuredBrands = [
-  { id: 'HERMÈS', name: 'Hermès', image: require('../images/Hermes/hermes3.webp'), itemCount: 7 },
-  { id: 'CHANEL', name: 'Chanel', image: require('../images/Chanel/chanel1.png'), itemCount: 5 },
-  { id: 'LOUIS VUITTON', name: 'Louis Vuitton', image: require('../images/LV/LV.jpg'), itemCount: 5 },
-  { id: 'DIOR', name: 'Dior', image: require('../images/Dior/dior1.png'), itemCount: 5, imagePosition: 'top' },
-  { id: 'GUCCI', name: 'Gucci', image: require('../images/Gucci/Gucci.jpeg'), itemCount: 5 },
-  { id: 'CARTIER', name: 'Cartier', image: require('../images/Cartier/cartier1.png'), itemCount: 5 },
-  { id: 'ROLEX', name: 'Rolex', image: require('../images/Rolex/Rolex1.jpg'), itemCount: 5, imagePosition: 'top' },
-  { id: 'PRADA', name: 'Prada', image: require('../images/Prada/prada-main.jpg'), itemCount: 5 },
+  { id: 'HERMÈS', name: 'Hermès', image: require('../images/Banner/hermes.webp'), itemCount: 7 },
+  { id: 'CHANEL', name: 'Chanel', image: require('../images/Banner/chanelbanner.webp'), itemCount: 5 },
+  { id: 'LOUIS VUITTON', name: 'Louis Vuitton', image: require('../images/LV/LV.webp'), itemCount: 5 },
+  { id: 'DIOR', name: 'Dior', image: require('../images/Dior/dior1.webp'), itemCount: 5, imagePosition: 'top' },
+  { id: 'GUCCI', name: 'Gucci', image: require('../images/Gucci/Gucci.webp'), itemCount: 5 },
+  { id: 'CARTIER', name: 'Cartier', image: require('../images/Cartier/cartier1.webp'), itemCount: 5 },
+  { id: 'ROLEX', name: 'Rolex', image: require('../images/Rolex/Rolex1.webp'), itemCount: 5, imagePosition: 'top' },
+  { id: 'PRADA', name: 'Prada', image: require('../images/Prada/prada-main.webp'), itemCount: 5 },
 ];
 
 // For backwards compatibility

@@ -1,17 +1,17 @@
-import React, { useState, useCallback, useRef } from 'react';
+import React, { useState, useCallback, useRef, useEffect } from 'react';
 import {
   View,
   Text,
   StyleSheet,
   ScrollView,
   TouchableOpacity,
-  Image,
   FlatList,
   TextInput,
   Modal,
   Dimensions,
   Animated,
 } from 'react-native';
+import { Image } from 'expo-image';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import { useFocusEffect, useScrollToTop } from '@react-navigation/native';
@@ -57,9 +57,15 @@ const CatalogScreen = ({ navigation, route }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [showFilterModal, setShowFilterModal] = useState(false);
   const [sortBy, setSortBy] = useState('featured');
-  const [openSection, setOpenSection] = useState(null); // 'women' | 'men' | null
+  const [gender, setGender] = useState(null); // 'women' | 'men' | null
   const listRef = useRef(null);
   useScrollToTop(listRef);
+
+
+  const selectGender = (g) => {
+    setGender(g);
+    setActiveCategory('all');
+  };
 
   useFocusEffect(
     useCallback(() => {
@@ -73,18 +79,32 @@ const CatalogScreen = ({ navigation, route }) => {
         setActiveBrand('all');
         navigation.setParams({ selectedCategory: undefined });
       }
-    }, [route?.params?.selectedBrand, route?.params?.selectedCategory])
+      if (route?.params?.searchQuery) {
+        setSearchQuery(route.params.searchQuery);
+        setGender(null);
+        navigation.setParams({ searchQuery: undefined });
+      }
+    }, [route?.params?.selectedBrand, route?.params?.selectedCategory, route?.params?.searchQuery])
   );
+
+  const pendingBrand = route?.params?.selectedBrand;
+  const effectiveBrand = pendingBrand || activeBrand;
+
+  const MEN_CATEGORY_IDS = MEN_CATEGORIES.map(c => c.id);
+  const WOMEN_CATEGORY_IDS = WOMEN_CATEGORIES.map(c => c.id);
 
   const filteredProducts = products.filter((product) => {
     const matchesCategory = activeCategory === 'all' || product.category === activeCategory;
-    const matchesBrand = activeBrand === 'all' || product.brand === activeBrand;
+    const matchesBrand = effectiveBrand === 'all' || product.brand === effectiveBrand;
     const matchesSearch = !searchQuery ||
       product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       product.brand.toLowerCase().includes(searchQuery.toLowerCase());
     const priceRange = priceRanges.find(r => r.id === activePriceRange);
     const matchesPrice = !priceRange || (product.price >= priceRange.min && product.price <= priceRange.max);
-    return matchesCategory && matchesBrand && matchesSearch && matchesPrice;
+    const matchesGender = !gender
+      || (gender === 'men' && MEN_CATEGORY_IDS.includes(product.category))
+      || (gender === 'women' && WOMEN_CATEGORY_IDS.includes(product.category));
+    return matchesCategory && matchesBrand && matchesSearch && matchesPrice && matchesGender;
   }).sort((a, b) => {
     switch (sortBy) {
       case 'price_low': return a.price - b.price;
@@ -94,20 +114,29 @@ const CatalogScreen = ({ navigation, route }) => {
     }
   });
 
-  const isExploreView = activeCategory === 'all' && activeBrand === 'all' && !searchQuery;
+  const isExploreView = effectiveBrand === 'all' && activeCategory === 'all' && !searchQuery && !gender;
+  const isCollectionView = gender !== null && effectiveBrand === 'all' && activeCategory === 'all' && !searchQuery;
 
   const getPageTitle = () => {
-    if (activeBrand !== 'all') return brands.find(b => b.id === activeBrand)?.name || activeBrand;
+    if (effectiveBrand !== 'all') return brands.find(b => b.id === effectiveBrand)?.name || effectiveBrand;
     if (activeCategory !== 'all') return getCategoryName(activeCategory);
     return 'All Products';
   };
 
   const handleBack = () => {
-    setActiveCategory('all');
-    setActiveBrand('all');
-    setSearchQuery('');
-    setActivePriceRange('all');
-    setSortBy('featured');
+    if (activeCategory !== 'all' || activeBrand !== 'all') {
+      setActiveCategory('all');
+      setActiveBrand('all');
+      setSearchQuery('');
+      setActivePriceRange('all');
+      setSortBy('featured');
+      if (route?.params?.fromHome) {
+        navigation.setParams({ fromHome: undefined });
+        navigation.navigate('Home');
+      }
+    } else if (navigation.canGoBack()) {
+      navigation.goBack();
+    }
   };
 
   const clearAllFilters = () => {
@@ -115,11 +144,6 @@ const CatalogScreen = ({ navigation, route }) => {
     setActivePriceRange('all');
     setSortBy('featured');
     setActiveCategory('all');
-  };
-
-  const selectCategory = (catId) => {
-    setActiveCategory(catId);
-    setOpenSection(null);
   };
 
   const renderProduct = ({ item, index }) => (
@@ -164,117 +188,22 @@ const CatalogScreen = ({ navigation, route }) => {
     </TouchableOpacity>
   );
 
-  // ── EXPLORE VIEW ──────────────────────────────────────────
-  if (isExploreView) {
-    return (
-      <View style={styles.container}>
-        {/* Header */}
-        <View style={styles.exploreHeader}>
-          <Text style={styles.exploreTitle}>Explore</Text>
-          <TouchableOpacity style={styles.iconBtn} onPress={() => navigation.navigate('Cart')}>
-            <Ionicons name="bag-outline" size={22} color="#1A1A1A" />
-            {getCartCount() > 0 && (
-              <View style={styles.cartBadge}><Text style={styles.cartBadgeText}>{getCartCount()}</Text></View>
-            )}
-          </TouchableOpacity>
-        </View>
+  const collectionCategories = gender === 'men' ? MEN_CATEGORIES : WOMEN_CATEGORIES;
+  const collectionTitle = gender === 'men' ? "Men's Collection" : "Women's Collection";
+  const bannerImg = gender === 'men'
+    ? require('../images/Banner/menscollection.webp')
+    : require('../images/Banner/womenscollection.webp');
 
-        <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.accordionContainer}>
-          {/* ── WOMEN'S ──────────────────── */}
-          <TouchableOpacity
-            style={styles.genderCard}
-            onPress={() => setOpenSection(openSection === 'women' ? null : 'women')}
-            activeOpacity={0.9}
-          >
-            <Image source={require('../images/Banner/banner2.webp')} style={styles.genderCardImg} resizeMode="cover" />
-            <View style={styles.genderCardOverlay} />
-            <View style={styles.genderCardContent}>
-              <Text style={styles.genderCardSub}>COLLECTION</Text>
-              <Text style={styles.genderCardTitle}>Women's</Text>
-            </View>
-            <View style={styles.genderCardChevron}>
-              <Ionicons
-                name={openSection === 'women' ? 'chevron-up' : 'chevron-down'}
-                size={18}
-                color="rgba(255,255,255,0.85)"
-              />
-            </View>
-          </TouchableOpacity>
+  const isListView = !isExploreView && !isCollectionView;
 
-          {openSection === 'women' && (
-            <View style={styles.subGrid}>
-              {WOMEN_CATEGORIES.map(cat => (
-                <TouchableOpacity
-                  key={cat.id}
-                  style={styles.subCard}
-                  onPress={() => selectCategory(cat.id)}
-                  activeOpacity={0.88}
-                >
-                  <Image source={cat.image} style={styles.subCardImg} resizeMode="cover" />
-                  <View style={styles.subCardOverlay} />
-                  <Text style={styles.subCardName}>{cat.name}</Text>
-                </TouchableOpacity>
-              ))}
-            </View>
-          )}
-
-          {/* ── MEN'S ────────────────────── */}
-          <TouchableOpacity
-            style={styles.genderCard}
-            onPress={() => setOpenSection(openSection === 'men' ? null : 'men')}
-            activeOpacity={0.9}
-          >
-            <Image source={require('../images/Banner/banner4.webp')} style={styles.genderCardImg} resizeMode="cover" />
-            <View style={styles.genderCardOverlay} />
-            <View style={styles.genderCardContent}>
-              <Text style={styles.genderCardSub}>COLLECTION</Text>
-              <Text style={styles.genderCardTitle}>Men's</Text>
-            </View>
-            <View style={styles.genderCardChevron}>
-              <Ionicons
-                name={openSection === 'men' ? 'chevron-up' : 'chevron-down'}
-                size={18}
-                color="rgba(255,255,255,0.85)"
-              />
-            </View>
-          </TouchableOpacity>
-
-          {openSection === 'men' && (
-            <View style={styles.subGrid}>
-              {MEN_CATEGORIES.map(cat => (
-                <TouchableOpacity
-                  key={cat.id}
-                  style={styles.subCard}
-                  onPress={() => selectCategory(cat.id)}
-                  activeOpacity={0.88}
-                >
-                  <Image source={cat.image} style={styles.subCardImg} resizeMode="cover" />
-                  <View style={styles.subCardOverlay} />
-                  <Text style={styles.subCardName}>{cat.name}</Text>
-                </TouchableOpacity>
-              ))}
-            </View>
-          )}
-
-          <View style={{ height: 100 }} />
-        </ScrollView>
-      </View>
-    );
-  }
-
-  // ── PRODUCT LISTING VIEW ──────────────────────────────────
+  // Single return — display:'none' keeps all views mounted so images never re-decode
   return (
     <View style={styles.container}>
-      {/* Header */}
-      <View style={styles.listHeader}>
-        <TouchableOpacity style={styles.backBtn} onPress={handleBack}>
-          <Ionicons name="chevron-back" size={20} color="#1A1A1A" />
-          <Text style={styles.backText}>Back</Text>
-        </TouchableOpacity>
-        <View style={styles.headerRight}>
-          <TouchableOpacity style={styles.iconBtn} onPress={() => setShowFilterModal(true)}>
-            <Ionicons name="options-outline" size={20} color="#1A1A1A" />
-          </TouchableOpacity>
+
+      {/* ── EXPLORE VIEW ─────────────────────────────── */}
+      <View style={{ flex: 1, display: isExploreView ? 'flex' : 'none' }}>
+        <View style={styles.exploreHeader}>
+          <Text style={styles.exploreTitle}>Shop</Text>
           <TouchableOpacity style={styles.iconBtn} onPress={() => navigation.navigate('Cart')}>
             <Ionicons name="bag-outline" size={22} color="#1A1A1A" />
             {getCartCount() > 0 && (
@@ -282,54 +211,141 @@ const CatalogScreen = ({ navigation, route }) => {
             )}
           </TouchableOpacity>
         </View>
+        <View style={styles.genderSplit}>
+          <TouchableOpacity style={styles.halfCard} onPress={() => selectGender('women')} activeOpacity={0.9}>
+            <Image source={require('../images/Banner/womenscollection.webp')} style={styles.halfCardImg} resizeMode="cover" />
+            <View style={styles.halfCardOverlay} />
+            <View style={styles.halfCardContent}>
+              <Text style={styles.halfCardSub}>COLLECTION</Text>
+              <Text style={styles.halfCardTitle}>Women's</Text>
+              <View style={styles.halfCardArrow}><Ionicons name="arrow-forward" size={14} color="#fff" /></View>
+            </View>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.halfCard} onPress={() => selectGender('men')} activeOpacity={0.9}>
+            <Image source={require('../images/Banner/menscollection.webp')} style={styles.halfCardImg} resizeMode="cover" />
+            <View style={styles.halfCardOverlay} />
+            <View style={styles.halfCardContent}>
+              <Text style={styles.halfCardSub}>COLLECTION</Text>
+              <Text style={styles.halfCardTitle}>Men's</Text>
+              <View style={styles.halfCardArrow}><Ionicons name="arrow-forward" size={14} color="#fff" /></View>
+            </View>
+          </TouchableOpacity>
+        </View>
       </View>
 
-      {/* Filter Tabs */}
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        style={styles.tabsContainer}
-        contentContainerStyle={styles.tabsContent}
-      >
-        {FILTER_TABS.map((tab) => (
-          <TouchableOpacity
-            key={tab.id}
-            style={[styles.tabPill, activeCategory === tab.id && styles.tabPillActive]}
-            onPress={() => setActiveCategory(tab.id)}
-          >
-            <Text style={[styles.tabText, activeCategory === tab.id && styles.tabTextActive]}>
-              {tab.label}
-            </Text>
-          </TouchableOpacity>
-        ))}
-      </ScrollView>
+      {/* ── COLLECTION VIEW ──────────────────────────── */}
+      <View style={{ flex: 1, display: isCollectionView ? 'flex' : 'none' }}>
+        <FlatList
+          data={isCollectionView ? filteredProducts : []}
+          renderItem={renderProduct}
+          keyExtractor={(item) => item.id.toString()}
+          numColumns={2}
+          contentContainerStyle={styles.productsGrid}
+          showsVerticalScrollIndicator={false}
+          initialNumToRender={8}
+          maxToRenderPerBatch={6}
+          windowSize={5}
+          removeClippedSubviews
+          ListHeaderComponent={
+            <>
+              <View style={styles.collectionBanner}>
+                <Image source={bannerImg} style={styles.collectionBannerImg} resizeMode="cover" />
+                <View style={styles.collectionBannerOverlay} />
+                <View style={styles.collectionBannerNav}>
+                  <TouchableOpacity style={styles.bannerNavBtn} onPress={() => { setGender(null); setActiveCategory('all'); }}>
+                    <Ionicons name="chevron-back" size={20} color="#fff" />
+                    <Text style={styles.bannerNavText}>Back</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity style={styles.bannerNavBtn} onPress={() => navigation.navigate('Cart')}>
+                    <Ionicons name="bag-outline" size={22} color="#fff" />
+                    {getCartCount() > 0 && (
+                      <View style={styles.cartBadge}><Text style={styles.cartBadgeText}>{getCartCount()}</Text></View>
+                    )}
+                  </TouchableOpacity>
+                </View>
+                <View style={styles.collectionBannerText}>
+                  <Text style={styles.collectionBannerTitle}>{collectionTitle}</Text>
+                  <Text style={styles.collectionBannerSub}>Find your next favourite piece</Text>
+                </View>
+              </View>
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.collectionTabsRow} contentContainerStyle={styles.tabsContent}>
+                {collectionCategories.map((cat) => (
+                  <TouchableOpacity
+                    key={cat.id}
+                    activeOpacity={0.7}
+                    style={[styles.tabPill, activeCategory === cat.id && styles.tabPillActive]}
+                    onPress={() => setActiveCategory(cat.id === activeCategory ? 'all' : cat.id)}
+                  >
+                    <Text style={[styles.tabPillText, activeCategory === cat.id && styles.tabPillTextActive]}>{cat.name}</Text>
+                  </TouchableOpacity>
+                ))}
+              </ScrollView>
+            </>
+          }
+        />
+      </View>
 
-      <FlatList
-        ref={listRef}
-        data={filteredProducts}
-        renderItem={renderProduct}
-        keyExtractor={(item) => item.id.toString()}
-        numColumns={2}
-        contentContainerStyle={styles.productsContainer}
-        showsVerticalScrollIndicator={false}
-        ListHeaderComponent={
-          <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>{getPageTitle()}</Text>
-            <Text style={styles.sectionCount}>{filteredProducts.length} items found</Text>
-          </View>
-        }
-        ListEmptyComponent={
-          <View style={styles.emptyState}>
-            <Ionicons name="search-outline" size={48} color="#C4C4C4" />
-            <Text style={styles.emptyTitle}>{t('catalog.noProducts')}</Text>
-            <TouchableOpacity style={styles.clearFiltersBtn} onPress={clearAllFilters}>
-              <Text style={styles.clearFiltersBtnText}>Clear Filters</Text>
+      {/* ── PRODUCT LISTING VIEW ─────────────────────── */}
+      <View style={{ flex: 1, display: isListView ? 'flex' : 'none' }}>
+        <View style={styles.listHeader}>
+          <TouchableOpacity style={styles.backBtn} onPress={handleBack}>
+            <Ionicons name="chevron-back" size={20} color="#1A1A1A" />
+            <Text style={styles.backText}>Back</Text>
+          </TouchableOpacity>
+          <View style={styles.headerRight}>
+            <TouchableOpacity style={styles.iconBtn} onPress={() => setShowFilterModal(true)}>
+              <Ionicons name="options-outline" size={20} color="#1A1A1A" />
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.iconBtn} onPress={() => navigation.navigate('Cart')}>
+              <Ionicons name="bag-outline" size={22} color="#1A1A1A" />
+              {getCartCount() > 0 && (
+                <View style={styles.cartBadge}><Text style={styles.cartBadgeText}>{getCartCount()}</Text></View>
+              )}
             </TouchableOpacity>
           </View>
-        }
-      />
+        </View>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.tabsContainer} contentContainerStyle={styles.tabsContent}>
+          {FILTER_TABS.map((tab) => (
+            <TouchableOpacity
+              key={tab.id}
+              activeOpacity={0.7}
+              style={[styles.tabPill, activeCategory === tab.id && styles.tabPillActive]}
+              onPress={() => setActiveCategory(tab.id)}
+            >
+              <Text style={[styles.tabText, activeCategory === tab.id && styles.tabTextActive]}>{tab.label}</Text>
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
+        <FlatList
+          ref={listRef}
+          data={isListView ? filteredProducts : []}
+          renderItem={renderProduct}
+          keyExtractor={(item) => item.id.toString()}
+          numColumns={2}
+          contentContainerStyle={styles.productsContainer}
+          showsVerticalScrollIndicator={false}
+          initialNumToRender={8}
+          maxToRenderPerBatch={6}
+          windowSize={5}
+          removeClippedSubviews
+          ListHeaderComponent={
+            <View style={styles.sectionHeader}>
+              <Text style={styles.sectionTitle}>{getPageTitle()}</Text>
+            </View>
+          }
+          ListEmptyComponent={
+            <View style={styles.emptyState}>
+              <Ionicons name="search-outline" size={48} color="#C4C4C4" />
+              <Text style={styles.emptyTitle}>{t('catalog.noProducts')}</Text>
+              <TouchableOpacity style={styles.clearFiltersBtn} onPress={clearAllFilters}>
+                <Text style={styles.clearFiltersBtnText}>Clear Filters</Text>
+              </TouchableOpacity>
+            </View>
+          }
+        />
+      </View>
 
-      {/* Filter Modal */}
+      {/* ── FILTER MODAL (shared) ────────────────────── */}
       <Modal visible={showFilterModal} animationType="slide" transparent onRequestClose={() => setShowFilterModal(false)}>
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
@@ -350,11 +366,7 @@ const CatalogScreen = ({ navigation, route }) => {
                     { id: 'price_high', label: t('catalog.priceHighLow') },
                     { id: 'name', label: 'Name' },
                   ].map((option) => (
-                    <TouchableOpacity
-                      key={option.id}
-                      style={[styles.chip, sortBy === option.id && styles.chipActive]}
-                      onPress={() => setSortBy(option.id)}
-                    >
+                    <TouchableOpacity key={option.id} style={[styles.chip, sortBy === option.id && styles.chipActive]} onPress={() => setSortBy(option.id)}>
                       <Text style={[styles.chipText, sortBy === option.id && styles.chipTextActive]}>{option.label}</Text>
                     </TouchableOpacity>
                   ))}
@@ -364,11 +376,7 @@ const CatalogScreen = ({ navigation, route }) => {
                 <Text style={styles.filterSectionTitle}>{t('catalog.brand')}</Text>
                 <View style={styles.chipRow}>
                   {brands.map((brand) => (
-                    <TouchableOpacity
-                      key={brand.id}
-                      style={[styles.chip, activeBrand === brand.id && styles.chipActive]}
-                      onPress={() => setActiveBrand(brand.id)}
-                    >
+                    <TouchableOpacity key={brand.id} style={[styles.chip, activeBrand === brand.id && styles.chipActive]} onPress={() => setActiveBrand(brand.id)}>
                       <Text style={[styles.chipText, activeBrand === brand.id && styles.chipTextActive]}>{brand.name}</Text>
                     </TouchableOpacity>
                   ))}
@@ -378,11 +386,7 @@ const CatalogScreen = ({ navigation, route }) => {
                 <Text style={styles.filterSectionTitle}>{t('catalog.priceRange')}</Text>
                 <View style={styles.chipRow}>
                   {priceRanges.map((range) => (
-                    <TouchableOpacity
-                      key={range.id}
-                      style={[styles.chip, activePriceRange === range.id && styles.chipActive]}
-                      onPress={() => setActivePriceRange(range.id)}
-                    >
+                    <TouchableOpacity key={range.id} style={[styles.chip, activePriceRange === range.id && styles.chipActive]} onPress={() => setActivePriceRange(range.id)}>
                       <Text style={[styles.chipText, activePriceRange === range.id && styles.chipTextActive]}>{range.name}</Text>
                     </TouchableOpacity>
                   ))}
@@ -423,88 +427,147 @@ const styles = StyleSheet.create({
     letterSpacing: -0.5,
   },
 
-  // ── Accordion / Gender cards ────────────────────────────
-  accordionContainer: {
-    paddingHorizontal: 20,
-    gap: 12,
+  // ── 50/50 Gender split ──────────────────────────────────
+  genderSplit: {
+    flex: 1,
   },
-  genderCard: {
-    height: 200,
-    borderRadius: 20,
+  halfCard: {
+    flex: 1,
     overflow: 'hidden',
     backgroundColor: '#111',
   },
-  genderCardImg: {
+  halfCardImg: {
     width: '100%',
     height: '100%',
   },
-  genderCardOverlay: {
+  halfCardOverlay: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(0,0,0,0.38)',
+    backgroundColor: 'rgba(0,0,0,0.35)',
   },
-  genderCardContent: {
+  halfCardContent: {
     position: 'absolute',
     bottom: 0,
     left: 0,
     right: 0,
-    padding: 22,
+    padding: 24,
   },
-  genderCardSub: {
+  halfCardSub: {
     fontSize: 10,
     color: 'rgba(255,255,255,0.65)',
     letterSpacing: 3,
-    marginBottom: 5,
+    marginBottom: 6,
   },
-  genderCardTitle: {
-    fontSize: 32,
+  halfCardTitle: {
+    fontSize: 36,
     fontWeight: '700',
     color: '#fff',
     letterSpacing: -0.5,
+    marginBottom: 14,
   },
-  genderCardChevron: {
-    position: 'absolute',
-    top: 20,
-    right: 20,
+  halfCardArrow: {
     width: 32,
     height: 32,
     borderRadius: 16,
-    backgroundColor: 'rgba(255,255,255,0.18)',
+    backgroundColor: 'rgba(255,255,255,0.22)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.35)',
     justifyContent: 'center',
     alignItems: 'center',
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.25)',
   },
 
-  // ── Sub-category grid ───────────────────────────────────
-  subGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 10,
-    marginBottom: 4,
-  },
-  subCard: {
-    width: (width - 40 - 10) / 2,
-    height: 110,
-    borderRadius: 16,
+  // ── Collection Banner ───────────────────────────────────
+  collectionBanner: {
+    height: 300,
+    width: width,
     overflow: 'hidden',
     backgroundColor: '#111',
   },
-  subCardImg: {
-    width: '100%',
-    height: '100%',
+  collectionBannerImg: {
+    width: width,
+    height: 300,
   },
-  subCardOverlay: {
+  collectionBannerOverlay: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(0,0,0,0.35)',
+    backgroundColor: 'rgba(0,0,0,0.38)',
   },
-  subCardName: {
+  collectionBannerNav: {
     position: 'absolute',
-    bottom: 14,
-    left: 14,
+    top: 56,
+    left: 0,
+    right: 0,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+  },
+  bannerNavBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  bannerNavText: {
     fontSize: 16,
+    fontWeight: '500',
+    color: '#fff',
+  },
+  collectionBannerText: {
+    position: 'absolute',
+    bottom: 28,
+    left: 20,
+    right: 20,
+  },
+  collectionBannerTitle: {
+    fontSize: 36,
     fontWeight: '700',
     color: '#fff',
-    letterSpacing: 0.2,
+    letterSpacing: -0.5,
+    marginBottom: 6,
+  },
+  collectionBannerSub: {
+    fontSize: 13,
+    color: 'rgba(255,255,255,0.72)',
+    letterSpacing: 0.3,
+  },
+  collectionSubHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingTop: 20,
+    paddingBottom: 12,
+  },
+  collectionSubTitle: {
+    fontSize: 22,
+    fontWeight: '700',
+    color: '#1A1A1A',
+  },
+  tabPillText: { fontSize: 14, fontWeight: '500', color: '#555' },
+  tabPillTextActive: { color: '#fff', fontWeight: '600' },
+  collectionTabsRow: {
+    height: 60,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F0F0F0',
+    flexShrink: 0,
+    marginBottom: 16,
+  },
+
+  // ── Collection view ─────────────────────────────────────
+  collectionTitle: {
+    fontSize: 26,
+    fontWeight: '700',
+    color: '#1A1A1A',
+    paddingHorizontal: 20,
+    marginBottom: 16,
+  },
+  productsGrid: {
+    paddingRight: 20,
+    paddingBottom: 100,
+  },
+  resultsCount: {
+    fontSize: 13,
+    color: '#999',
+    paddingLeft: 20,
+    marginBottom: 14,
   },
 
   // ── List Header ─────────────────────────────────────────
@@ -553,21 +616,23 @@ const styles = StyleSheet.create({
 
   // ── Filter Tabs ─────────────────────────────────────────
   tabsContainer: {
-    maxHeight: 58,
+    height: 60,
     borderBottomWidth: 1,
     borderBottomColor: '#F0F0F0',
   },
   tabsContent: {
     paddingHorizontal: 20,
-    paddingVertical: 10,
     gap: 8,
+    flexDirection: 'row',
     alignItems: 'center',
+    height: 60,
   },
   tabPill: {
     paddingHorizontal: 22,
     paddingVertical: 9,
     borderRadius: 28,
     backgroundColor: '#F2F2F2',
+    flexShrink: 0,
   },
   tabPillActive: { backgroundColor: '#1A1A1A' },
   tabText: { fontSize: 14, fontWeight: '500', color: '#555' },

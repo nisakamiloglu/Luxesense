@@ -5,11 +5,11 @@ import {
   StyleSheet,
   ScrollView,
   TouchableOpacity,
-  Image,
   TextInput,
   Dimensions,
   FlatList,
 } from 'react-native';
+import { Image } from 'expo-image';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import { useScrollToTop } from '@react-navigation/native';
@@ -26,38 +26,51 @@ const BANNERS = [
   { id: 3, image: require('../images/Hermes/hermes1.webp'), top: 'SIGNATURE', bottom: 'The Essentials' },
 ];
 
-const FILTER_TABS = [
-  { id: 'all', label: 'Trending' },
-  { id: 'men', label: 'Men' },
-  { id: 'women', label: 'Women' },
-  { id: 'tops', label: 'Tops' },
-  { id: 'bottoms', label: 'Bottoms' },
-  { id: 'jackets', label: 'Jackets' },
-  { id: 'bags', label: 'Bags' },
-  { id: 'shoes', label: 'Shoes' },
-  { id: 'jewelry', label: 'Jewelry' },
-  { id: 'watches', label: 'Watches' },
-];
-
-const CLOTHING_TABS = ['men', 'women', 'tops', 'bottoms', 'jackets', 'clothing'];
-
 const HomeScreen = ({ navigation }) => {
-  const { user, getCartCount, toggleWishlist, isInWishlist, products } = useApp();
+  const { user, getCartCount, toggleWishlist, isInWishlist, products, recentlyViewed } = useApp();
   const { t } = useTranslation();
   const [search, setSearch] = useState('');
-  const [activeTab, setActiveTab] = useState('all');
   const [activeBanner, setActiveBanner] = useState(0);
   const listRef = useRef(null);
   const bannerRef = useRef(null);
   useScrollToTop(listRef);
 
-  const catFilter = CLOTHING_TABS.includes(activeTab) ? 'clothing' : activeTab;
+  const getPersonalizedProducts = () => {
+    const quizBrands = user.quizBrands;
+    const quizBudgetMax = user.quizBudgetMax;
 
-  const filtered = products.filter((p) => {
-    const matchCat = catFilter === 'all' || p.category === catFilter;
-    const matchSearch = !search || p.name.toLowerCase().includes(search.toLowerCase()) || p.brand.toLowerCase().includes(search.toLowerCase());
-    return matchCat && matchSearch;
-  });
+    let base = products;
+
+    // Apply search filter
+    if (search) {
+      base = base.filter(p =>
+        p.name.toLowerCase().includes(search.toLowerCase()) ||
+        p.brand.toLowerCase().includes(search.toLowerCase())
+      );
+    }
+
+    // Personalize by quiz brand selections
+    if (quizBrands && quizBrands.length > 0) {
+      const brandFiltered = base.filter(p =>
+        quizBrands.some(b => p.brand.toUpperCase() === b)
+      );
+
+      if (brandFiltered.length > 0) {
+        // Sort: budget-appropriate products first, rest after
+        if (quizBudgetMax) {
+          return [
+            ...brandFiltered.filter(p => p.price <= quizBudgetMax),
+            ...brandFiltered.filter(p => p.price > quizBudgetMax),
+          ].slice(0, 8);
+        }
+        return brandFiltered.slice(0, 8);
+      }
+    }
+
+    return base.slice(0, 8);
+  };
+
+  const filtered = getPersonalizedProducts();
 
   const onBannerScroll = (e) => {
     setActiveBanner(Math.round(e.nativeEvent.contentOffset.x / width));
@@ -105,7 +118,7 @@ const HomeScreen = ({ navigation }) => {
             <Ionicons name="bag-outline" size={22} color="#1A1A1A" />
             {getCartCount() > 0 && <View style={styles.badge}><Text style={styles.badgeText}>{getCartCount()}</Text></View>}
           </TouchableOpacity>
-          <TouchableOpacity style={styles.iconBtn}>
+          <TouchableOpacity style={styles.iconBtn} onPress={() => navigation.navigate('Notifications')}>
             <Ionicons name="notifications-outline" size={22} color="#1A1A1A" />
           </TouchableOpacity>
         </View>
@@ -139,10 +152,10 @@ const HomeScreen = ({ navigation }) => {
         numColumns={2}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.listContent}
-        initialNumToRender={6}
-        maxToRenderPerBatch={4}
-        windowSize={5}
-        removeClippedSubviews
+        initialNumToRender={12}
+        maxToRenderPerBatch={8}
+        windowSize={21}
+        removeClippedSubviews={false}
         ListHeaderComponent={
           <>
             {/* Banner */}
@@ -167,14 +180,13 @@ const HomeScreen = ({ navigation }) => {
                     <View style={styles.bannerOverlay}>
                       <Text style={styles.bannerTop}>{b.top}</Text>
                       <Text style={styles.bannerBottom}>{b.bottom}</Text>
-                      <View style={styles.bannerLine} />
+                      <TouchableOpacity
+                        style={styles.shopNowBtn}
+                        onPress={() => navigation.navigate('Shop')}
+                      >
+                        <Text style={styles.shopNowText}>Shop now →</Text>
+                      </TouchableOpacity>
                     </View>
-                    <TouchableOpacity
-                      style={styles.shopNowBtn}
-                      onPress={() => navigation.navigate('Shop')}
-                    >
-                      <Text style={styles.shopNowText}>Shop now →</Text>
-                    </TouchableOpacity>
                   </TouchableOpacity>
                 ))}
               </ScrollView>
@@ -185,19 +197,6 @@ const HomeScreen = ({ navigation }) => {
               </View>
             </View>
 
-            {/* Filter Tabs */}
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.tabsWrap} contentContainerStyle={styles.tabsContent}>
-              {FILTER_TABS.map((t) => (
-                <TouchableOpacity
-                  key={t.id}
-                  style={[styles.tab, activeTab === t.id && styles.tabActive]}
-                  onPress={() => setActiveTab(t.id)}
-                >
-                  <Text style={[styles.tabText, activeTab === t.id && styles.tabTextActive]}>{t.label}</Text>
-                </TouchableOpacity>
-              ))}
-            </ScrollView>
-
             {/* Brands */}
             <View style={styles.brandsSection}>
               <View style={styles.sectionRow}>
@@ -206,12 +205,12 @@ const HomeScreen = ({ navigation }) => {
                   <Text style={styles.seeAll}>Show All</Text>
                 </TouchableOpacity>
               </View>
-              <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: SIZES.padding, gap: 12 }}>
                 {featuredBrands.map((b) => (
                   <TouchableOpacity
                     key={b.id}
                     style={styles.brandCard}
-                    onPress={() => navigation.navigate('Shop', { selectedBrand: b.id })}
+                    onPress={() => navigation.navigate('Shop', { selectedBrand: b.id, fromHome: true })}
                   >
                     <Image
                       source={typeof b.image === 'string' ? { uri: b.image } : b.image}
@@ -226,24 +225,19 @@ const HomeScreen = ({ navigation }) => {
               </ScrollView>
             </View>
 
-            {/* Top Trends header */}
-            <View style={styles.sectionRow}>
-              <Text style={styles.sectionTitle}>
-                {activeTab === 'all' ? 'Top Trends' : FILTER_TABS.find(f => f.id === activeTab)?.label}
-              </Text>
-              <TouchableOpacity onPress={() => navigation.navigate('Shop')}>
-                <Text style={styles.seeAll}>Show All</Text>
-              </TouchableOpacity>
-            </View>
+            {/* Picked for you header */}
+            <Text style={styles.youMayLike}>
+              {user.quizBrands && user.quizBrands.length > 0 ? 'Picked for you' : 'New Arrivals'}
+            </Text>
           </>
         }
       />
 
       {/* AI Stylist FAB */}
       <TouchableOpacity style={styles.fab} onPress={() => navigation.navigate('AIStylist')} activeOpacity={0.85}>
-        <View style={styles.fabInner}><Ionicons name="sparkles" size={22} color="#fff" /></View>
-        <Text style={styles.fabText}>{t('home.aiStylist')}</Text>
+        <Ionicons name="sparkles" size={22} color={COLORS.gold} />
       </TouchableOpacity>
+
     </View>
   );
 };
@@ -258,7 +252,7 @@ const styles = StyleSheet.create({
     paddingTop: 60,
     paddingBottom: 12,
   },
-  logo: { fontSize: 22, fontWeight: '800', color: '#1A1A1A', letterSpacing: 4 },
+  logo: { fontSize: 24, fontWeight: '300', color: '#1A1A1A', letterSpacing: 5 },
   headerRight: { flexDirection: 'row', gap: 8 },
   iconBtn: {
     width: 40,
@@ -309,12 +303,12 @@ const styles = StyleSheet.create({
   },
   bannerTop: { fontSize: 11, color: '#fff', letterSpacing: 5, fontWeight: '500' },
   bannerBottom: { fontSize: 30, color: '#fff', fontWeight: '300', fontStyle: 'italic', letterSpacing: 2, marginTop: 4 },
-  bannerLine: { width: 44, height: 1, backgroundColor: COLORS.gold, marginTop: 16 },
+  bannerLine: { width: 0, height: 0 },
   shopNowBtn: {
-    position: 'absolute',
-    bottom: 16,
-    right: 16,
-    backgroundColor: '#1A1A1A',
+    marginTop: 20,
+    backgroundColor: 'rgba(255,255,255,0.18)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.6)',
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: 20,
@@ -323,13 +317,34 @@ const styles = StyleSheet.create({
   dots: { flexDirection: 'row', justifyContent: 'center', marginTop: 12, gap: 6 },
   dot: { width: 6, height: 6, borderRadius: 3, backgroundColor: '#DDD' },
   dotActive: { backgroundColor: '#1A1A1A', width: 20, borderRadius: 3 },
-  // Tabs
-  tabsWrap: { marginBottom: 20, maxHeight: 44 },
-  tabsContent: { paddingHorizontal: SIZES.padding, gap: 8, alignItems: 'center' },
-  tab: { paddingHorizontal: 20, paddingVertical: 9, borderRadius: 20, backgroundColor: '#F5F0EB' },
-  tabActive: { backgroundColor: '#1A1A1A' },
-  tabText: { fontSize: 13, fontWeight: '600', color: '#666' },
-  tabTextActive: { color: '#fff' },
+  youMayLike: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#1A1A1A',
+    marginBottom: 14,
+    textAlign: 'left',
+  },
+  // Notifications modal
+  notifBackdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.3)' },
+  notifSheet: {
+    backgroundColor: '#fff',
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    paddingBottom: 40,
+    maxHeight: '80%',
+  },
+  notifHandle: { width: 36, height: 4, backgroundColor: '#E0E0E0', borderRadius: 2, alignSelf: 'center', marginTop: 12, marginBottom: 4 },
+  notifHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 20, paddingVertical: 16, borderBottomWidth: 1, borderBottomColor: '#F0F0F0' },
+  notifTitle: { fontSize: 18, fontWeight: '700', color: '#1A1A1A' },
+  notifCard: { flexDirection: 'row', padding: 16, borderBottomWidth: 1, borderBottomColor: '#F5F5F5', gap: 14, alignItems: 'center' },
+  notifImgWrap: { width: 72, height: 90, borderRadius: 10, overflow: 'hidden', backgroundColor: '#F5F0EB' },
+  notifImg: { width: '100%', height: '100%' },
+  notifInfo: { flex: 1, gap: 4 },
+  notifLabelRow: { flexDirection: 'row', alignItems: 'center', gap: 4 },
+  notifLabel: { fontSize: 9, fontWeight: '700', color: COLORS.gold, letterSpacing: 1.2 },
+  notifBrowsed: { fontSize: 12, color: '#888' },
+  notifSuggested: { fontSize: 13, fontWeight: '500', color: '#1A1A1A' },
+  notifPrice: { fontSize: 13, fontWeight: '700', color: '#1A1A1A' },
   // Brands
   brandsSection: { marginBottom: 24, marginHorizontal: -SIZES.padding },
   sectionRow: {
@@ -341,22 +356,18 @@ const styles = StyleSheet.create({
   },
   sectionTitle: { fontSize: 18, fontWeight: '700', color: '#1A1A1A' },
   seeAll: { fontSize: 13, color: '#888', fontWeight: '500' },
-  brandCard: { width: 130, height: 160, marginLeft: SIZES.padding, borderRadius: 12, overflow: 'hidden' },
+  brandCard: { width: 130, height: 160, borderRadius: 12, overflow: 'hidden' },
   brandImg: { width: '100%', height: '100%' },
   brandOverlay: {
     position: 'absolute',
-    bottom: 10,
-    left: 10,
-    right: 10,
+    bottom: 0,
+    left: 0,
+    right: 0,
     paddingHorizontal: 12,
-    paddingVertical: 7,
-    backgroundColor: 'rgba(255,255,255,0.18)',
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.3)',
-    alignItems: 'center',
+    paddingVertical: 10,
+    backgroundColor: 'rgba(245,240,235,0.88)',
   },
-  brandName: { fontSize: 12, fontWeight: '700', color: '#fff', letterSpacing: 1.5 },
+  brandName: { fontSize: 12, fontWeight: '700', color: '#1A1A1A', letterSpacing: 0.5 },
   // Product Grid
   productCard: { width: CARD_W, marginBottom: 20 },
   imgBox: { width: '100%', height: CARD_W * 1.3, borderRadius: 14, overflow: 'hidden', backgroundColor: '#F5F0EB' },
@@ -394,17 +405,16 @@ const styles = StyleSheet.create({
     position: 'absolute',
     bottom: 24,
     right: SIZES.padding,
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#fff',
-    borderRadius: 28,
-    paddingRight: 18,
+    width: 54,
+    height: 54,
+    borderRadius: 27,
+    backgroundColor: 'rgba(245,240,235,0.92)',
     borderWidth: 1,
     borderColor: '#E8E0D8',
+    justifyContent: 'center',
+    alignItems: 'center',
     ...SHADOWS.medium,
   },
-  fabInner: { width: 48, height: 48, borderRadius: 24, backgroundColor: COLORS.gold, justifyContent: 'center', alignItems: 'center' },
-  fabText: { marginLeft: 10, fontSize: 14, fontWeight: '600', color: '#1A1A1A' },
 });
 
 export default HomeScreen;

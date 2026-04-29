@@ -70,7 +70,6 @@ const ProductShowcaseScreen = ({ navigation }) => {
                   />
                 </View>
                 <Text style={styles.collectionName}>{collection.name}</Text>
-                <Text style={styles.collectionItems}>{collection.items} items</Text>
               </TouchableOpacity>
             ))}
           </ScrollView>

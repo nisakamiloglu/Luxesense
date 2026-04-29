@@ -57,7 +57,7 @@ const ProfileScreen = ({ navigation }) => {
     {
       icon: 'bag-outline',
       label: t('profile.myOrders'),
-      onPress: () => {},
+      onPress: () => navigation.navigate('OrderHistory'),
     },
     {
       icon: 'location-outline',

@@ -17,14 +17,13 @@ const SplashScreen = ({ navigation }) => {
 
   return (
     <ImageBackground
-      source={require('../images/Banner/banner6.webp')}
+      source={require('../images/Banner/splash.webp')}
       style={styles.container}
       resizeMode="cover"
     >
       <View style={styles.overlay} />
       <Animated.View style={[styles.content, { opacity: fade, transform: [{ translateY: slide }] }]}>
         <Text style={styles.brand}>LUXESENSE</Text>
-        <Text style={styles.ai}>AI</Text>
         <View style={styles.line} />
         <Text style={styles.tagline}>A New Way of Shopping</Text>
       </Animated.View>
@@ -48,13 +47,6 @@ const styles = StyleSheet.create({
     fontWeight: '300',
     color: '#fff',
     letterSpacing: 14,
-  },
-  ai: {
-    fontSize: 18,
-    fontWeight: '500',
-    color: COLORS.gold,
-    letterSpacing: 8,
-    marginTop: 6,
   },
   line: {
     width: 40,

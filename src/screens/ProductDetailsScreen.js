@@ -5,10 +5,10 @@ import {
   StyleSheet,
   ScrollView,
   TouchableOpacity,
-  Image,
   Modal,
   Dimensions,
 } from 'react-native';
+import { Image } from 'expo-image';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import { COLORS, SIZES } from '../constants/theme';
@@ -151,9 +151,8 @@ const ProductDetailsScreen = ({ route, navigation }) => {
             )}
           </View>
 
-          {/* SKU + Stock row */}
+          {/* Stock row */}
           <View style={styles.metaRow}>
-            <Text style={styles.skuText}>SKU: {product.sku}</Text>
             <View style={styles.stockRow}>
               <View
                 style={[
@@ -170,32 +169,30 @@ const ProductDetailsScreen = ({ route, navigation }) => {
           {/* Thin divider */}
           <View style={styles.divider} />
 
-          {/* Color selection */}
-          <View style={styles.section}>
-            <View style={styles.sectionHeaderRow}>
-              <Text style={styles.sectionTitle}>{t('product.color')}</Text>
-              <Text style={styles.selectedLabel}>{product.colorNames[selectedColor]}</Text>
-            </View>
-            <View style={styles.colorsRow}>
-              {product.colors.map((color, index) => (
+          {/* Description - moved up */}
+          {product.description ? (
+            <Text style={styles.descriptionTop}>{product.description}</Text>
+          ) : null}
+
+          {/* Color + Quantity side by side */}
+          <View style={styles.colorQuantityRow}>
+            <View style={styles.quantitySide}>
+              <Text style={styles.sectionTitle}>{t('cart.quantity')}</Text>
+              <View style={[styles.qtyPill, { marginTop: 12 }]}>
                 <TouchableOpacity
-                  key={index}
-                  style={[
-                    styles.colorCircle,
-                    { backgroundColor: color },
-                    selectedColor === index && styles.colorCircleActive,
-                  ]}
-                  onPress={() => setSelectedColor(index)}
+                  style={styles.qtyBtn}
+                  onPress={() => quantity > 1 && setQuantity(quantity - 1)}
                 >
-                  {selectedColor === index && (
-                    <Ionicons
-                      name="checkmark"
-                      size={14}
-                      color={color === '#1A1A1A' || color === '#8B0000' ? COLORS.white : COLORS.black}
-                    />
-                  )}
+                  <Ionicons name="remove" size={18} color={COLORS.black} />
                 </TouchableOpacity>
-              ))}
+                <Text style={styles.qtyText}>{quantity}</Text>
+                <TouchableOpacity
+                  style={styles.qtyBtn}
+                  onPress={() => setQuantity(quantity + 1)}
+                >
+                  <Ionicons name="add" size={18} color={COLORS.black} />
+                </TouchableOpacity>
+              </View>
             </View>
           </View>
 
@@ -231,26 +228,6 @@ const ProductDetailsScreen = ({ route, navigation }) => {
               </View>
             </View>
           )}
-
-          {/* Quantity */}
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>{t('cart.quantity')}</Text>
-            <View style={styles.qtyPill}>
-              <TouchableOpacity
-                style={styles.qtyBtn}
-                onPress={() => quantity > 1 && setQuantity(quantity - 1)}
-              >
-                <Ionicons name="remove" size={18} color={COLORS.black} />
-              </TouchableOpacity>
-              <Text style={styles.qtyText}>{quantity}</Text>
-              <TouchableOpacity
-                style={styles.qtyBtn}
-                onPress={() => setQuantity(quantity + 1)}
-              >
-                <Ionicons name="add" size={18} color={COLORS.black} />
-              </TouchableOpacity>
-            </View>
-          </View>
 
           {/* Store Availability collapsible */}
           <TouchableOpacity
@@ -290,13 +267,6 @@ const ProductDetailsScreen = ({ route, navigation }) => {
             )}
           </TouchableOpacity>
 
-          {/* Description */}
-          {product.description ? (
-            <View style={styles.section}>
-              <Text style={styles.sectionTitle}>{t('product.description')}</Text>
-              <Text style={styles.description}>{product.description}</Text>
-            </View>
-          ) : null}
         </View>
 
         <View style={{ height: 120 }} />
@@ -479,13 +449,8 @@ const styles = StyleSheet.create({
   },
   metaRow: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: 16,
-  },
-  skuText: {
-    fontSize: 12,
-    color: COLORS.lightGray,
   },
   stockRow: {
     flexDirection: 'row',
@@ -505,6 +470,25 @@ const styles = StyleSheet.create({
     height: 1,
     backgroundColor: COLORS.beigeDark,
     marginBottom: 8,
+  },
+  descriptionTop: {
+    fontSize: 14,
+    color: COLORS.textSecondary,
+    lineHeight: 22,
+    marginTop: 14,
+    marginBottom: 4,
+  },
+  colorQuantityRow: {
+    flexDirection: 'row',
+    marginTop: 24,
+    gap: 20,
+    alignItems: 'flex-start',
+  },
+  colorSide: {
+    flex: 1,
+  },
+  quantitySide: {
+    alignItems: 'flex-start',
   },
 
   // ── Sections ──────────────────────────────────────────────

@@ -24,6 +24,7 @@ import FeedbackScreen from '../screens/FeedbackScreen';
 import WishlistScreen from '../screens/WishlistScreen';
 import ProfileScreen from '../screens/ProfileScreen';
 import SettingsScreen from '../screens/SettingsScreen';
+import NotificationsScreen from '../screens/NotificationsScreen';
 import AIStylistScreen from '../screens/AIStylistScreen';
 import ChatScreen from '../screens/ChatScreen';
 import StyleQuizScreen from '../screens/StyleQuizScreen';
@@ -189,6 +190,7 @@ const AppNavigator = () => {
       <Stack.Screen name="AIStylist" component={AIStylistScreen} />
       <Stack.Screen name="Chat" component={ChatScreen} />
       <Stack.Screen name="Settings" component={SettingsScreen} />
+      <Stack.Screen name="Notifications" component={NotificationsScreen} />
       <Stack.Screen name="StyleQuiz" component={StyleQuizScreen} />
 
       {/* Advisor Flow */}
