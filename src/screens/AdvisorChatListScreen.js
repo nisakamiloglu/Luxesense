@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -9,74 +9,57 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { COLORS, SIZES, SHADOWS } from '../constants/theme';
+import { useApp } from '../context/AppContext';
+import { getConversations } from '../services/api';
 
-// Mock chat conversations data
-const conversations = [
-  {
-    id: 1,
-    customer: {
-      name: 'Alexandra Chen',
-      avatar: 'AC',
-      tier: 'Platinum',
-    },
-    lastMessage: 'That would be perfect, thank you!',
-    lastMessageTime: '2:35 PM',
-    unreadCount: 1,
-    isOnline: true,
-  },
-  {
-    id: 2,
-    customer: {
-      name: 'Sophia Laurent',
-      avatar: 'SL',
-      tier: 'Platinum',
-    },
-    lastMessage: 'Yes, tomorrow at 3pm works for me',
-    lastMessageTime: 'Yesterday',
-    unreadCount: 2,
-    isOnline: true,
-  },
-  {
-    id: 3,
-    customer: {
-      name: 'Victoria Sterling',
-      avatar: 'VS',
-      tier: 'Gold',
-    },
-    lastMessage: "We expect them next week. I'll notify you!",
-    lastMessageTime: '11:05 AM',
-    unreadCount: 0,
-    isOnline: false,
-  },
-  {
-    id: 4,
-    customer: {
-      name: 'Emma Rothschild',
-      avatar: 'ER',
-      tier: 'Gold',
-    },
-    lastMessage: 'Yes! We have the Blue Oblique.',
-    lastMessageTime: '3 days ago',
-    unreadCount: 0,
-    isOnline: false,
-  },
-  {
-    id: 5,
-    customer: {
-      name: 'James Morrison',
-      avatar: 'JM',
-      tier: 'Silver',
-    },
-    lastMessage: 'Let me know if you need anything else.',
-    lastMessageTime: '1 week ago',
-    unreadCount: 0,
-    isOnline: false,
-  },
+const MOCK_CONVERSATIONS = [
+  { id: 1, customer: { name: 'Alexandra Chen', avatar: 'AC', tier: 'Platinum' }, lastMessage: 'That would be perfect, thank you!', lastMessageTime: '2:35 PM', unreadCount: 1, isOnline: true },
+  { id: 2, customer: { name: 'Sophia Laurent', avatar: 'SL', tier: 'Platinum' }, lastMessage: 'Yes, tomorrow at 3pm works for me', lastMessageTime: 'Yesterday', unreadCount: 2, isOnline: true },
+  { id: 3, customer: { name: 'Victoria Sterling', avatar: 'VS', tier: 'Gold' }, lastMessage: "We expect them next week. I'll notify you!", lastMessageTime: '11:05 AM', unreadCount: 0, isOnline: false },
+  { id: 4, customer: { name: 'Emma Rothschild', avatar: 'ER', tier: 'Gold' }, lastMessage: 'Yes! We have the Blue Oblique.', lastMessageTime: '3 days ago', unreadCount: 0, isOnline: false },
+  { id: 5, customer: { name: 'James Morrison', avatar: 'JM', tier: 'Silver' }, lastMessage: 'Let me know if you need anything else.', lastMessageTime: '1 week ago', unreadCount: 0, isOnline: false },
 ];
 
 const AdvisorChatListScreen = ({ navigation }) => {
+  const { token, assignedCustomers } = useApp();
   const [searchQuery, setSearchQuery] = useState('');
-  const [filter, setFilter] = useState('all'); // all, unread
+  const [filter, setFilter] = useState('all');
+  const [conversations, setConversations] = useState(MOCK_CONVERSATIONS);
+
+  useEffect(() => {
+    const load = async () => {
+      if (!token) return;
+      try {
+        const data = await getConversations(token);
+        if (data?.success && data.conversations?.length > 0) {
+          setConversations(data.conversations.map(c => ({
+            id: c.conversationId,
+            customer: {
+              _id: c.partner?._id,
+              name: c.partner?.name || 'Customer',
+              avatar: (c.partner?.name || 'C').split(' ').map(n => n[0]).join('').toUpperCase(),
+              tier: 'Silver',
+            },
+            lastMessage: c.lastMessage?.text || '',
+            lastMessageTime: c.lastMessage ? new Date(c.lastMessage.createdAt).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }) : '',
+            unreadCount: 0,
+            isOnline: false,
+          })));
+        } else if (assignedCustomers?.length > 0) {
+          // Build from assigned customers if no chat history yet
+          setConversations(assignedCustomers.map((c, i) => ({
+            id: c._id || i + 1,
+            customer: { _id: c._id, name: c.name, avatar: (c.name || 'C').split(' ').map(n => n[0]).join('').toUpperCase(), tier: c.tier || 'Silver' },
+            lastMessage: 'Start a conversation',
+            lastMessageTime: '',
+            unreadCount: 0,
+            isOnline: false,
+          })));
+        }
+      } catch {}
+    };
+    load();
+  }, [token]);
 
   const filteredConversations = conversations.filter((conv) => {
     const matchesSearch = conv.customer.name.toLowerCase().includes(searchQuery.toLowerCase());

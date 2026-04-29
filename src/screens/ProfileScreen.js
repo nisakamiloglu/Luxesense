@@ -33,13 +33,13 @@ const ProfileScreen = ({ navigation }) => {
   };
 
   const myAdvisor = {
-    id: 1,
-    name: 'Isabelle Moreau',
+    id: user.advisorId || 1,
+    name: user.advisorName || 'Isabelle Moreau',
     role: 'Senior Sales Advisor',
     store: 'Paris Flagship',
     phone: '+33 1 42 65 24 00',
     email: 'isabelle@luxesense.com',
-    avatar: 'IM',
+    avatar: user.advisorName ? user.advisorName.split(' ').map(n => n[0]).join('').toUpperCase() : 'IM',
     rating: 4.9,
     specialties: ['Fine Jewelry', 'Haute Horlogerie'],
     availability: 'Available Now',

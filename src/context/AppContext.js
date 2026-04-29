@@ -385,6 +385,12 @@ export const AppProvider = ({ children }) => {
         setUserType(savedUserType);
         setUser(prev => ({ ...prev, ...savedUser }));
         setIsLoggedIn(true);
+        if (savedUserType === 'customer' && savedToken) {
+          loadWishlist(savedToken);
+        }
+        if (savedUserType === 'advisor' && savedToken) {
+          loadAdvisorCustomers(savedToken);
+        }
       }
     } catch (error) {
       console.log('Error loading auth state:', error);

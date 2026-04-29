@@ -87,14 +87,14 @@ const CheckoutScreen = ({ navigation }) => {
 
   const steps = ['Shipping', 'Payment', 'Review'];
 
-  const handlePlaceOrder = () => {
+  const handlePlaceOrder = async () => {
     if (!paymentInfo.cardNumber || !paymentInfo.cardName || !paymentInfo.expiry || !paymentInfo.cvv) {
       Alert.alert('Payment Required', 'Please fill in all payment details');
       setActiveStep(1);
       return;
     }
 
-    const order = placeOrder(shippingInfo, {
+    const order = await placeOrder(shippingInfo, {
       method: selectedShipping,
       cost: shippingCost,
     });
