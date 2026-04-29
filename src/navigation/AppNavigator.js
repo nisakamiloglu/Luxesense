@@ -170,7 +170,7 @@ const AppNavigator = () => {
     <Stack.Navigator
       screenOptions={{
         headerShown: false,
-        animation: 'fade_from_bottom',
+        animation: 'slide_from_right',
         animationDuration: 250,
       }}
       initialRouteName={getInitialRoute()}
