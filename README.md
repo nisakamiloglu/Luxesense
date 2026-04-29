@@ -19,14 +19,15 @@ A full-stack luxury retail mobile application that connects high-end customers w
   </tr>
   <tr>
     <td align="center"><img src="assets/Screenshots/shop.png" width="160"/><br/><sub>Catalog</sub></td>
-    <td align="center"><img src="assets/Screenshots/brand.png" width="160"/><br/><sub>Brand View</sub></td>
-    <td align="center"><img src="assets/Screenshots/wishlist.png" width="160"/><br/><sub>Wishlist</sub></td>
+    <td align="center"><img src="assets/Screenshots/women.PNG" width="160"/><br/><sub>Women's Collection</sub></td>
     <td align="center"><img src="assets/Screenshots/men.png" width="160"/><br/><sub>Men's Collection</sub></td>
+    <td align="center"><img src="assets/Screenshots/brand.png" width="160"/><br/><sub>Brand View</sub></td>
   </tr>
   <tr>
-    <td align="center"><img src="assets/Screenshots/chat.png" width="160"/><br/><sub>AI Stylist Chat</sub></td>
+    <td align="center"><img src="assets/Screenshots/wishlist.png" width="160"/><br/><sub>Wishlist</sub></td>
+    <td align="center"><img src="assets/Screenshots/aichat.PNG" width="160"/><br/><sub>AI Stylist</sub></td>
+    <td align="center"><img src="assets/Screenshots/chat.png" width="160"/><br/><sub>Advisor Chat</sub></td>
     <td align="center"><img src="assets/Screenshots/notification.png" width="160"/><br/><sub>Notifications</sub></td>
-    <td align="center"><img src="assets/Screenshots/women.PNG" width="160"/><br/><sub>Women's Collection</sub></td>
   </tr>
 </table>
 

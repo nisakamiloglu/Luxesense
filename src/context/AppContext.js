@@ -498,6 +498,8 @@ export const AppProvider = ({ children }) => {
     setCartItems([]);
     setWishlist([]);
     setOrders([]);
+    setAiStylistMessages([]);
+    setSaChatMessages([]);
     setIsLoggedIn(true);
     setUserType(type);
     setIsNewUser(newUser);

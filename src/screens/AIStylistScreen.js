@@ -469,25 +469,24 @@ const AIStylistScreen = ({ navigation }) => {
     setInputText('');
     setIsTyping(true);
 
+    const localResponse = getAIResponse(currentInput);
     try {
-      // Use Groq AI for response
       const aiText = await getGroqResponse(currentInput, messages, language);
       const aiMessage = {
         id: messages.length + 2,
         type: 'ai',
         text: aiText,
+        products: localResponse.products,
         timestamp: new Date(),
       };
       setMessages(prev => [...prev, aiMessage]);
     } catch (error) {
-      // Fallback to local response
-      const aiResponse = getAIResponse(currentInput);
       const aiMessage = {
         id: messages.length + 2,
         type: 'ai',
-        text: aiResponse.text,
-        products: aiResponse.products,
-        followUp: aiResponse.followUp,
+        text: localResponse.text,
+        products: localResponse.products,
+        followUp: localResponse.followUp,
         timestamp: new Date(),
       };
       setMessages(prev => [...prev, aiMessage]);
@@ -496,8 +495,6 @@ const AIStylistScreen = ({ navigation }) => {
   };
 
   const handleQuickPrompt = async (prompt) => {
-    setInputText(prompt);
-
     const userMessage = {
       id: messages.length + 1,
       type: 'user',
@@ -508,25 +505,24 @@ const AIStylistScreen = ({ navigation }) => {
     setIsTyping(true);
     setInputText('');
 
+    const localResponse = getAIResponse(prompt);
     try {
-      // Use Groq AI for response
       const aiText = await getGroqResponse(prompt, messages, language);
       const aiMessage = {
         id: messages.length + 2,
         type: 'ai',
         text: aiText,
+        products: localResponse.products,
         timestamp: new Date(),
       };
       setMessages(prev => [...prev, aiMessage]);
     } catch (error) {
-      // Fallback to local response
-      const aiResponse = getAIResponse(prompt);
       const aiMessage = {
         id: messages.length + 2,
         type: 'ai',
-        text: aiResponse.text,
-        products: aiResponse.products,
-        followUp: aiResponse.followUp,
+        text: localResponse.text,
+        products: localResponse.products,
+        followUp: localResponse.followUp,
         timestamp: new Date(),
       };
       setMessages(prev => [...prev, aiMessage]);

@@ -2,17 +2,15 @@ const GROQ_API_KEY = process.env.EXPO_PUBLIC_GROQ_API_KEY;
 const GROQ_API_URL = 'https://api.groq.com/openai/v1/chat/completions';
 
 const getSystemPrompt = (language) => {
-  return `You are an AI stylist at LuxeSense, a luxury fashion app. You help people find beautiful items from brands like Hermès, Chanel, Louis Vuitton, Cartier, Rolex.
+  return `You are an AI stylist at LuxeSense, a luxury fashion app. You help with styling questions about Hermès, Chanel, Louis Vuitton, Cartier, Rolex and similar brands.
 
-CRITICAL LANGUAGE RULE: Always respond in the SAME language the user writes in. If they write in English, respond in English. If they write in Turkish, respond in Turkish. Match their language exactly.
+CRITICAL LANGUAGE RULE: Always respond in the SAME language the user writes in. Turkish in → Turkish out. English in → English out.
 
-How to respond:
-- Be friendly and natural, not robotic
-- Keep responses short (2-3 sentences)
-- You can use emojis occasionally
-- If someone says hi, just say hi back casually
-- Give helpful fashion advice when asked
-- Be enthusiastic but not over the top`;
+Rules:
+- Max 2 sentences. Be concise.
+- Friendly and natural, not corporate
+- Emojis: 1 max per message
+- Product suggestions are shown separately as cards — do NOT list products in your text`;
 };
 
 export const getAIResponse = async (userMessage, conversationHistory = [], language = 'en') => {
@@ -35,7 +33,7 @@ export const getAIResponse = async (userMessage, conversationHistory = [], langu
       body: JSON.stringify({
         model: 'llama-3.1-8b-instant',
         messages: messages,
-        max_tokens: 300,
+        max_tokens: 120,
         temperature: 0.7,
       }),
     });
